@@ -17,6 +17,21 @@
 }
 
 
+/* ===== CARD HEADER ===== */
+.card-header {
+    background: var(--nav-bg);
+    padding: 22px 22px 18px;
+    text-align: center;
+}
+
+.header-logo {
+    height: 110px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
 /* ===== PARTICIPANT ===== */
 .participant-section {
     padding: 12px 20px;
