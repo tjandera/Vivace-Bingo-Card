@@ -1,0 +1,27 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+input {
+    user-select: text;
+    cursor: text;
+}
+
+body {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--blue);
+    background-image:
+        linear-gradient(135deg, var(--blue) 0%, var(--mint) 100%),
+        repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,.07) 40px),
+        repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,.07) 40px);
+    background-blend-mode: normal, overlay, overlay;
+    padding-bottom: 48px;
+    overflow-x: hidden;
+}

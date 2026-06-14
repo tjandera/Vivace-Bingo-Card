@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('partials/head') %>
+</head>
+<body>
+
+<!-- LOGIN OVERLAY — shown on first visit, hidden by JS after name is entered -->
+<div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+        <div class="login-subhead">★ SMU CCA FAIR 2026 ★</div>
+        <h2 class="login-title"><span class="star">★</span> VIVACE <span class="star">★</span></h2>
+        <p class="login-tagline">Tap booths · Collect stamps · Win prizes</p>
+
+        <label class="login-label" for="loginInput">Enter your name to begin</label>
+        <input type="text" id="loginInput" class="login-input" placeholder="e.g. Alex Tan" autocomplete="off" maxlength="30">
+        <button id="loginBtn" class="login-btn" onclick="handleLogin()">Let's Go →</button>
+        <div id="loginError" class="login-error"></div>
+
+        <div class="login-notice">
+            <span class="notice-icon">⚠️</span>
+            <div>
+                Your stamp progress is saved in <strong>this browser only</strong>.
+                Switching devices, clearing your browser data, or using incognito mode will reset your card.
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/nav') %>
+<%- include('partials/marquee') %>
+
+<div class="card-wrapper">
+    <div class="card">
+
+        <!-- HEADER -->
+        <div class="card-header">
+            <div class="card-subhead"><%- subhead %></div>
+            <h1><span class="star">★</span> <%= eventName %> <span class="star">★</span></h1>
+            <div class="card-tagline"><%= tagline %></div>
+        </div>
+
+        <!-- PARTICIPANT -->
+        <div class="participant-section">
+            <span class="participant-label">Cardholder</span>
+            <div class="participant-name-row">
+                <span id="nameDisplay">—</span>
+                <button class="switch-btn" id="switchUserBtn" title="Switch user">Switch</button>
+            </div>
+        </div>
+
+        <!-- PROGRESS -->
+        <div class="progress-area">
+            <div class="progress-text">🏆 Booths visited: <span id="progressCount">0</span> / <%= totalBooths %></div>
+            <div class="progress-bar-bg">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- BOOTH GRID -->
+        <div class="checkpoint-grid">
+            <% booths.forEach(function(booth, i) { %>
+            <div class="checkpoint-card"
+                 style="--accent:<%= booth.accent %>"
+                 data-id="<%= booth.id %>"
+                 data-name="<%= booth.name %>"
+                 data-icon="<%= booth.icon %>"
+                 onclick="handleBoothClick(this)">
+                <span class="checkpoint-icon" style="animation-delay:<%= (i * 0.38).toFixed(2) %>s"><%= booth.icon %></span>
+                <div class="checkpoint-name"><%= booth.name %></div>
+            </div>
+            <% }); %>
+        </div>
+
+        <!-- PRIZES -->
+        <div class="prize-section">
+            <div class="prize-title">★ Redeem Prizes ★</div>
+            <div class="prize-grid">
+                <% prizes.forEach(function(prize) { %>
+                <div class="prize-circle" data-prize="<%= prize.id %>" onclick="handlePrizeClick(<%= prize.id %>)">
+                    <div class="prize-icon"><%= prize.icon %></div>
+                    <div class="prize-label"><%= prize.stampsRequired %> stamps</div>
+                    <div class="prize-req"><%= prize.label %></div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <div class="card-footer">TAP BOOTH → ENTER CODE → EARN STAMP → WIN PRIZES</div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="codeModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-icon" id="modalIcon">🎪</div>
+        <h3 id="modalCheckpointName">Booth</h3>
+        <p>Enter the 4‑digit booth code:</p>
+        <input type="text" id="codeInput" placeholder="0000" autocomplete="off" inputmode="numeric" pattern="[0-9]*" maxlength="4">
+        <div class="modal-buttons">
+            <button class="btn-verify" id="modalConfirmBtn">✓ Verify</button>
+            <button class="btn-cancel"  id="modalCancelBtn">✗ Cancel</button>
+        </div>
+        <div id="modalError" class="modal-error"></div>
+    </div>
+</div>
+
+<script>
+    const BOOTH_CODES  = <%- JSON.stringify(boothCodes) %>;
+    const TOTAL_BOOTHS = <%= totalBooths %>;
+    const PRIZE_CONFIG = <%- JSON.stringify(prizeConfig) %>;
+</script>
+<script src="/js/bingo.js"></script>
+
+</body>
+</html>

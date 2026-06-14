@@ -1,0 +1,521 @@
+/* ===== CARD WRAPPER ===== */
+.card-wrapper {
+    width: 100%;
+    max-width: 480px;
+    padding: 28px 16px 0;
+}
+
+.card {
+    background: var(--paper);
+    border-radius: 36px;
+    overflow: hidden;
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+}
+
+/* ===== CARD HEADER ===== */
+.card-header {
+    background: var(--nav-bg);
+    padding: 22px 22px 18px;
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+        -45deg,
+        rgba(255,215,53,.05) 0px,
+        rgba(255,215,53,.05) 10px,
+        transparent 10px,
+        transparent 20px
+    );
+    pointer-events: none;
+}
+
+.card-subhead {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--yellow);
+    letter-spacing: .24em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.card-header h1 {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 36px;
+    letter-spacing: .06em;
+    position: relative;
+    line-height: 1;
+}
+
+.card-header h1 .star {
+    color: var(--yellow);
+    font-size: 24px;
+    vertical-align: middle;
+}
+
+.card-tagline {
+    font-family: 'Caveat', cursive;
+    font-size: 16px;
+    font-weight: 600;
+    opacity: .75;
+    margin-top: 6px;
+    position: relative;
+}
+
+/* ===== PARTICIPANT ===== */
+.participant-section {
+    padding: 12px 20px;
+    border-bottom: 2px solid var(--cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.participant-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+}
+
+.participant-name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#nameDisplay {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 4px 14px;
+    border-radius: 30px;
+    color: var(--ink);
+}
+
+.switch-btn {
+    background: white;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 30px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: #64748b;
+    cursor: pointer;
+    transition: transform .1s, box-shadow .1s;
+}
+.switch-btn:hover  { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+.switch-btn:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+
+/* ===== PROGRESS ===== */
+.progress-area {
+    padding: 14px 20px 10px;
+}
+
+.progress-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.progress-bar-bg {
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 20px;
+    height: 14px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, var(--red), var(--orange));
+    width: 0%;
+    height: 100%;
+    border-radius: 20px;
+    transition: width .45s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ===== BOOTH GRID ===== */
+.checkpoint-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 16px 18px;
+}
+
+.checkpoint-card {
+    background: var(--cream-2);
+    border-radius: 20px;
+    text-align: center;
+    padding: 14px 6px 12px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease;
+    position: relative;
+}
+
+/* Coloured accent bar at top of each booth card */
+.checkpoint-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 7px;
+    border-radius: 18px 18px 0 0;
+    background: var(--accent, var(--yellow));
+}
+
+.checkpoint-card:hover:not(.visited) {
+    transform: translate(-2px,-2px);
+    box-shadow: 5px 5px 0 var(--ink);
+}
+.checkpoint-card:active:not(.visited) {
+    transform: translate(1px,1px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
+.checkpoint-card.visited {
+    background: #e8ecf0;
+    border-color: #94a3b8;
+    box-shadow: 2px 2px 0 #94a3b8;
+    cursor: default;
+    opacity: .65;
+}
+.checkpoint-card.visited::before { background: #94a3b8; }
+.checkpoint-card.visited::after {
+    content: '✓';
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 16px;
+    color: var(--green);
+    font-weight: 800;
+}
+
+.checkpoint-icon {
+    font-size: 30px;
+    margin: 4px 0 6px;
+    display: block;
+    animation: bob 3.4s ease-in-out infinite;
+}
+
+.checkpoint-name {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--ink);
+}
+
+@keyframes bob {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-4px); }
+}
+
+/* ===== PRIZE SECTION ===== */
+.prize-section {
+    padding: 14px 20px 18px;
+    background: var(--cream);
+    border-top: 2.5px solid var(--ink);
+}
+
+.prize-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 17px;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: .04em;
+}
+
+.prize-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.prize-circle {
+    background: white;
+    border-radius: 50%;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: not-allowed;
+    opacity: .38;
+    transition: transform .12s, box-shadow .12s, opacity .2s;
+    padding: 6px;
+}
+.prize-circle.available {
+    cursor: pointer;
+    opacity: 1;
+    background: var(--yellow);
+}
+.prize-circle.available:hover  { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.prize-circle.available:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+.prize-circle.redeemed {
+    cursor: default;
+    opacity: .45;
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    box-shadow: 2px 2px 0 #94a3b8;
+}
+
+.prize-icon  { font-size: 22px; margin-bottom: 2px; }
+.prize-label { font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 11px; }
+.prize-req   { font-family: 'Space Mono', monospace; font-size: 8px; color: #555; }
+
+/* ===== LOGIN OVERLAY ===== */
+.login-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--nav-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.login-card {
+    background: var(--paper);
+    border-radius: 36px;
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 32px 24px 28px;
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-subhead {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--ink);
+    opacity: .4;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.login-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 36px;
+    color: var(--nav-bg);
+    line-height: 1;
+    margin-bottom: 6px;
+}
+
+.login-title .star { color: var(--yellow); font-size: 24px; vertical-align: middle; }
+
+.login-tagline {
+    font-family: 'Caveat', cursive;
+    font-size: 15px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 28px;
+}
+
+.login-label {
+    display: block;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 10px;
+}
+
+.login-input {
+    width: 100%;
+    padding: 12px 18px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 40px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    background: white;
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color .15s, box-shadow .15s;
+    user-select: text;
+    cursor: text;
+}
+.login-input:focus {
+    border-color: var(--blue);
+    box-shadow: 3px 3px 0 var(--blue);
+}
+
+.login-btn {
+    width: 100%;
+    background: var(--green);
+    color: white;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 12px;
+    border-radius: 40px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+}
+.login-btn:hover   { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.login-btn:active  { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+.login-btn:disabled { opacity: .6; cursor: default; transform: none; box-shadow: 3px 3px 0 var(--ink); }
+
+.login-error {
+    font-family: 'Fredoka', sans-serif;
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 8px;
+    min-height: 18px;
+}
+
+.login-notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff8e7;
+    border: 2px solid var(--orange);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-top: 18px;
+    text-align: left;
+}
+
+.notice-icon { font-size: 16px; flex-shrink: 0; line-height: 1.5; }
+
+.login-notice div {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.55;
+    opacity: .85;
+}
+
+/* ===== CARD FOOTER ===== */
+.card-footer {
+    background: var(--nav-bg);
+    padding: 12px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,.45);
+    letter-spacing: .14em;
+}
+
+/* ===== MODAL ===== */
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,27,77,.75);
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+}
+
+.modal-content {
+    background: var(--paper);
+    border: 3px solid var(--ink);
+    box-shadow: 6px 6px 0 var(--ink);
+    border-radius: 36px;
+    max-width: 300px;
+    width: 100%;
+    padding: 30px 22px;
+    text-align: center;
+}
+
+.modal-icon { font-size: 44px; margin-bottom: 8px; }
+
+.modal-content h3 {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 6px;
+}
+
+.modal-content p {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 14px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 40px;
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    text-align: center;
+    letter-spacing: .4em;
+    color: var(--ink);
+    background: white;
+    outline: none;
+    margin-bottom: 14px;
+    transition: border-color .15s, box-shadow .15s;
+}
+.modal-content input:focus {
+    border-color: var(--blue);
+    box-shadow: 3px 3px 0 var(--blue);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.btn-verify,
+.btn-cancel {
+    padding: 10px 22px;
+    border-radius: 40px;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s;
+}
+.btn-verify { background: var(--green); color: white; }
+.btn-cancel  { background: white; color: var(--ink); }
+.btn-verify:hover,
+.btn-cancel:hover  { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn-verify:active,
+.btn-cancel:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+
+.modal-error {
+    font-family: 'Fredoka', sans-serif;
+    color: var(--red);
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 10px;
+    min-height: 20px;
+}
