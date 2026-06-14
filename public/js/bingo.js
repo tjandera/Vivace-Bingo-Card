@@ -78,6 +78,74 @@ function updateUI() {
 function showLogin() { overlay.style.display = 'flex'; }
 function hideLogin() { overlay.style.display = 'none'; }
 
+// ===== CONFETTI =====
+function launchConfetti() {
+    const canvas = document.getElementById('confettiCanvas');
+    const ctx    = canvas.getContext('2d');
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.style.display  = 'block';
+    canvas.style.opacity  = '1';
+    canvas.style.transition = '';
+
+    const colors = ['#FF6B6B', '#FFD735', '#4ECDC4', '#45B7D1', '#FF69B4', '#A78BFA', '#FFA500', '#34D399'];
+    const pieces = Array.from({ length: 160 }, () => ({
+        x:     Math.random() * canvas.width,
+        y:     Math.random() * canvas.height - canvas.height,
+        w:     Math.random() * 12 + 5,
+        h:     Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        speed: Math.random() * 3 + 2,
+        angle: Math.random() * Math.PI * 2,
+        spin:  (Math.random() - 0.5) * 0.18,
+        drift: (Math.random() - 0.5) * 1.5,
+    }));
+
+    const end = Date.now() + 4000;
+    let raf;
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach(p => {
+            p.y += p.speed;
+            p.x += p.drift;
+            p.angle += p.spin;
+            if (p.y > canvas.height) { p.y = -10; p.x = Math.random() * canvas.width; }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+        });
+
+        if (Date.now() < end) {
+            raf = requestAnimationFrame(draw);
+        } else {
+            cancelAnimationFrame(raf);
+            canvas.style.transition = 'opacity 1s';
+            canvas.style.opacity    = '0';
+            setTimeout(() => { canvas.style.display = 'none'; }, 1000);
+        }
+    }
+    draw();
+}
+
+// ===== CONGRATS =====
+function showCongrats() {
+    launchConfetti();
+    const m = document.getElementById('congratsModal');
+    m.style.display = 'flex';
+}
+
+document.getElementById('congratsCloseBtn').addEventListener('click', () => {
+    document.getElementById('congratsModal').style.display = 'none';
+});
+document.getElementById('congratsModal').addEventListener('click', e => {
+    if (e.target === document.getElementById('congratsModal'))
+        document.getElementById('congratsModal').style.display = 'none';
+});
+
 // ===== LOGIN =====
 window.handleLogin = function () {
     const input    = document.getElementById('loginInput');
@@ -137,8 +205,11 @@ function verifyCode() {
         saveState();
         updateUI();
         closeModal();
+        if (visitedBooths.length === TOTAL_BOOTHS) {
+            setTimeout(showCongrats, 500);
+        }
     } else {
-        $error.innerText = '❌ Incorrect code — try again!';
+        $error.innerText = 'Incorrect code — try again!';
         $input.value     = '';
         $input.focus();
     }

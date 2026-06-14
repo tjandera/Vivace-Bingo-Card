@@ -458,3 +458,57 @@
     margin-top: 10px;
     min-height: 20px;
 }
+
+/* ===== CONGRATS MODAL ===== */
+.congrats-modal .modal-content {
+    max-width: 320px;
+}
+
+.congrats-content {
+    text-align: center;
+    padding: 36px 24px 32px;
+}
+
+.congrats-emoji {
+    font-size: 52px;
+    line-height: 1;
+    margin-bottom: 10px;
+    animation: pop 0.5s cubic-bezier(.34,1.56,.64,1) both;
+}
+
+.congrats-logo {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 16px;
+}
+
+.congrats-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 32px;
+    color: var(--ink);
+    margin-bottom: 10px;
+    letter-spacing: .04em;
+}
+
+.congrats-text {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    color: #555;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+.congrats-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 17px;
+    background: var(--yellow);
+    color: var(--ink);
+}
+
+@keyframes pop {
+    0%   { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
