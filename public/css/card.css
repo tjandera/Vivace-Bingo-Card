@@ -17,57 +17,15 @@
 .card-header {
     background: var(--nav-bg);
     padding: 22px 22px 18px;
-    color: white;
     text-align: center;
-    position: relative;
-    overflow: hidden;
 }
 
-.card-header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: repeating-linear-gradient(
-        -45deg,
-        rgba(255,215,53,.05) 0px,
-        rgba(255,215,53,.05) 10px,
-        transparent 10px,
-        transparent 20px
-    );
-    pointer-events: none;
-}
-
-.card-subhead {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    color: var(--yellow);
-    letter-spacing: .24em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    position: relative;
-}
-
-.card-header h1 {
-    font-family: 'Bagel Fat One', cursive;
-    font-size: 36px;
-    letter-spacing: .06em;
-    position: relative;
-    line-height: 1;
-}
-
-.card-header h1 .star {
-    color: var(--yellow);
-    font-size: 24px;
-    vertical-align: middle;
-}
-
-.card-tagline {
-    font-family: 'Caveat', cursive;
-    font-size: 16px;
-    font-weight: 600;
-    opacity: .75;
-    margin-top: 6px;
-    position: relative;
+.header-logo {
+    height: 72px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
 }
 
 /* ===== PARTICIPANT ===== */
@@ -169,6 +127,7 @@
     cursor: pointer;
     transition: transform .12s ease, box-shadow .12s ease;
     position: relative;
+    overflow: hidden;
 }
 
 /* Coloured accent bar at top of each booth card */
@@ -177,7 +136,6 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 7px;
-    border-radius: 18px 18px 0 0;
     background: var(--accent, var(--yellow));
 }
 
@@ -310,32 +268,12 @@
     text-align: center;
 }
 
-.login-subhead {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    color: var(--ink);
-    opacity: .4;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-
-.login-title {
-    font-family: 'Bagel Fat One', cursive;
-    font-size: 36px;
-    color: var(--nav-bg);
-    line-height: 1;
-    margin-bottom: 6px;
-}
-
-.login-title .star { color: var(--yellow); font-size: 24px; vertical-align: middle; }
-
-.login-tagline {
-    font-family: 'Caveat', cursive;
-    font-size: 15px;
-    font-weight: 600;
-    color: #64748b;
-    margin-bottom: 28px;
+.login-logo {
+    height: 64px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 24px;
 }
 
 .login-label {
@@ -417,16 +355,6 @@
     opacity: .85;
 }
 
-/* ===== CARD FOOTER ===== */
-.card-footer {
-    background: var(--nav-bg);
-    padding: 12px;
-    text-align: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    color: rgba(255,255,255,.45);
-    letter-spacing: .14em;
-}
 
 /* ===== MODAL ===== */
 .modal {
@@ -479,10 +407,10 @@
     border: 2.5px solid var(--ink);
     box-shadow: 3px 3px 0 var(--ink);
     border-radius: 40px;
-    font-family: 'Space Mono', monospace;
-    font-size: 22px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
     text-align: center;
-    letter-spacing: .4em;
+    letter-spacing: .02em;
     color: var(--ink);
     background: white;
     outline: none;

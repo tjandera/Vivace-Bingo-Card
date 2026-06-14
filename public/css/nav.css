@@ -14,22 +14,15 @@
 }
 
 .nav-brand {
-    font-family: 'Bagel Fat One', cursive;
-    color: white;
-    font-size: 22px;
-    letter-spacing: .05em;
     display: flex;
     align-items: center;
-    gap: 6px;
 }
 
-.nav-brand .star { color: var(--yellow); }
-
-.nav-brand .year {
-    font-size: 11px;
-    color: var(--yellow);
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 800;
+.nav-logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+    display: block;
 }
 
 .nav-right {
