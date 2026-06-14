@@ -17,7 +17,7 @@ body {
     flex-direction: column;
     align-items: center;
     background-color: var(--blue);
-    background-image: url('/images/bg.png');
+    background-image: url('/images/yellow-bg.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
