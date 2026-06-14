@@ -19,31 +19,18 @@
 
 /* ===== CARD HEADER ===== */
 .card-header {
-    background: var(--nav-bg);
+    background-color: var(--yellow);
+    background-image: url('/images/yellow-bg.png');
+    background-size: cover;
+    background-position: center;
     padding: 22px 22px 18px;
     text-align: center;
     position: relative;
     overflow: hidden;
 }
 
-.card-header::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse at 50% 0%, rgba(255,215,53,.18) 0%, transparent 70%),
-        repeating-linear-gradient(
-            -45deg,
-            rgba(255,255,255,.04) 0px,
-            rgba(255,255,255,.04) 8px,
-            transparent 8px,
-            transparent 18px
-        );
-    pointer-events: none;
-}
-
 .header-logo {
-    position: relative; /* sit above the ::before layer */
+    position: relative;
 }
 
 .header-logo {
