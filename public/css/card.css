@@ -6,7 +6,10 @@
 }
 
 .card {
-    background: var(--paper);
+    background-color: var(--paper);
+    background-image: url('/images/card-bg.png');
+    background-size: cover;
+    background-position: center;
     border-radius: 36px;
     overflow: hidden;
     border: 3px solid var(--ink);
@@ -176,7 +179,6 @@
 /* ===== PRIZE SECTION ===== */
 .prize-section {
     padding: 14px 20px 18px;
-    background: var(--cream);
     border-top: 2.5px solid var(--ink);
 }
 
