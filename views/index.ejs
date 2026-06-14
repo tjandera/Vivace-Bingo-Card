@@ -64,9 +64,12 @@
                  style="--accent:<%= booth.accent %>"
                  data-id="<%= booth.id %>"
                  data-name="<%= booth.name %>"
-                 data-icon="<%= booth.icon %>"
+                 data-logo="<%= booth.logo %>"
                  onclick="handleBoothClick(this)">
-                <span class="checkpoint-icon" style="animation-delay:<%= (i * 0.38).toFixed(2) %>s"><%= booth.icon %></span>
+                <img class="checkpoint-icon"
+                     src="<%= booth.logo %>"
+                     alt="<%= booth.name %>"
+                     style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
                 <div class="checkpoint-name"><%= booth.name %></div>
             </div>
             <% }); %>
@@ -93,7 +96,7 @@
 <!-- MODAL -->
 <div id="codeModal" class="modal">
     <div class="modal-content">
-        <div class="modal-icon" id="modalIcon">🎪</div>
+        <div class="modal-icon" id="modalIcon"></div>
         <h3 id="modalCheckpointName">Booth</h3>
         <p>Enter the 4‑digit booth code:</p>
         <input type="text" id="codeInput" placeholder="0000" autocomplete="off" inputmode="numeric" pattern="[0-9]*" maxlength="4">

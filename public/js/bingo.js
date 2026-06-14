@@ -115,7 +115,7 @@ window.handleBoothClick = function (card) {
     if (visitedBooths.includes(card.dataset.id)) return;
     currentBoothId   = card.dataset.id;
     $mName.innerText = card.dataset.name;
-    $mIcon.innerText = card.dataset.icon || '🎪';
+    $mIcon.innerHTML = `<img src="${card.dataset.logo}" alt="${card.dataset.name}" class="modal-cca-logo">`;
     $input.value     = '';
     $error.innerText = '';
     modal.style.display = 'flex';

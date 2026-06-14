@@ -208,9 +208,11 @@
 }
 
 .checkpoint-icon {
-    font-size: 30px;
-    margin: 4px 0 6px;
+    width: 54px;
+    height: 54px;
+    object-fit: contain;
     display: block;
+    margin: 4px auto 8px;
     animation: bob 3.4s ease-in-out infinite;
 }
 
@@ -449,7 +451,13 @@
     text-align: center;
 }
 
-.modal-icon { font-size: 44px; margin-bottom: 8px; }
+.modal-icon { margin-bottom: 10px; min-height: 72px; display: flex; align-items: center; justify-content: center; }
+
+.modal-cca-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+}
 
 .modal-content h3 {
     font-family: 'Bagel Fat One', cursive;
