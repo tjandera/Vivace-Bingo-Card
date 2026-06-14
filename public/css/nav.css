@@ -14,15 +14,11 @@
 }
 
 .nav-brand {
-    display: flex;
-    align-items: center;
-}
-
-.nav-logo {
-    height: 32px;
-    width: auto;
-    object-fit: contain;
-    display: block;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: white;
+    letter-spacing: .04em;
 }
 
 .nav-right {
