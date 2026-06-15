@@ -57,8 +57,14 @@ function saveState() {
 
 // ===== UI =====
 function updateUI() {
+    const mandatoryDone = visitedBooths.includes(MANDATORY_BOOTH_ID);
     document.querySelectorAll('.checkpoint-card').forEach(card => {
-        card.classList.toggle('visited', visitedBooths.includes(card.dataset.id));
+        const id        = card.dataset.id;
+        const isVisited = visitedBooths.includes(id);
+        const isMand    = card.dataset.mandatory === 'true';
+        const isLocked  = !isVisited && !isMand && !mandatoryDone;
+        card.classList.toggle('visited', isVisited);
+        card.classList.toggle('locked',  isLocked);
     });
     const n = visitedBooths.length;
     $fill.style.width = (n / TOTAL_BOOTHS * 100) + '%';
@@ -181,6 +187,10 @@ document.getElementById('switchUserBtn').addEventListener('click', () => {
 // ===== BOOTH INTERACTION =====
 window.handleBoothClick = function (card) {
     if (visitedBooths.includes(card.dataset.id)) return;
+    if (card.classList.contains('locked')) {
+        alert(`Visit "${MANDATORY_BOOTH_NAME}" first to unlock the rest of the booths.`);
+        return;
+    }
     currentBoothId   = card.dataset.id;
     $mName.innerText = card.dataset.name;
     $mIcon.innerHTML = `<img src="${card.dataset.logo}" alt="${card.dataset.name}" class="modal-cca-logo">`;

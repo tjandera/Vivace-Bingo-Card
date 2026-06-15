@@ -8,6 +8,9 @@ exports.getStampCard = (req, res) => {
     const prizeConfig = {};
     prizes.forEach(p => { prizeConfig[p.id] = p.stampsRequired; });
 
+    const mandatoryBooth   = booths.find(b => b.mandatory) || booths[0];
+    const mandatoryBoothId = mandatoryBooth.id;
+
     res.render('index', {
         pageTitle:   'VIVACE 2026 — Stamp Card',
         eventName:   'VIVACE',
@@ -19,5 +22,7 @@ exports.getStampCard = (req, res) => {
         totalBooths: booths.length,
         boothCodes,
         prizeConfig,
+        mandatoryBoothId,
+        mandatoryBoothName: mandatoryBooth.name,
     });
 };

@@ -191,6 +191,68 @@
     font-weight: 800;
 }
 
+/* Locked (non-mandatory) booths before the mandatory one is stamped */
+.checkpoint-card .lock-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 27, 77, 0.55);
+    color: white;
+    font-size: 26px;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    border-radius: 18px;
+}
+.checkpoint-card.locked {
+    cursor: not-allowed;
+    filter: grayscale(.6);
+}
+.checkpoint-card.locked .lock-overlay { display: flex; }
+.checkpoint-card.locked:hover { transform: none; box-shadow: 3px 3px 0 var(--ink); }
+
+/* Mandatory "START HERE" booth — pulses to draw the eye */
+.checkpoint-card.mandatory {
+    border-color: var(--red);
+    box-shadow: 3px 3px 0 var(--red);
+    animation: mandatory-pulse 1.8s ease-in-out infinite;
+    overflow: visible;
+}
+.checkpoint-card.mandatory::before {
+    border-top-left-radius: 17px;
+    border-top-right-radius: 17px;
+}
+.checkpoint-card.mandatory.visited {
+    animation: none;
+    border-color: #94a3b8;
+    box-shadow: 2px 2px 0 #94a3b8;
+}
+.checkpoint-card.mandatory.visited .mandatory-badge { display: none; }
+
+.mandatory-badge {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--red);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    padding: 3px 9px;
+    border-radius: 30px;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    z-index: 2;
+    white-space: nowrap;
+}
+
+@keyframes mandatory-pulse {
+    0%, 100% { box-shadow: 3px 3px 0 var(--red); }
+    50%      { box-shadow: 5px 5px 0 var(--red); transform: translateY(-1px); }
+}
+
 .checkpoint-icon {
     width: 54px;
     height: 54px;
@@ -398,10 +460,12 @@
     border: 3px solid var(--ink);
     box-shadow: 6px 6px 0 var(--ink);
     border-radius: 36px;
-    max-width: 300px;
+    max-width: 360px;
     width: 100%;
-    padding: 30px 22px;
+    padding: 26px 22px;
     text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .modal-icon { margin-bottom: 10px; min-height: 72px; display: flex; align-items: center; justify-content: center; }
@@ -533,4 +597,125 @@
 @keyframes pop {
     0%   { transform: scale(0); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
+}
+
+/* ===== RULES BLOCK (login overlay + persistent on card) ===== */
+.rules-block,
+.rules-section {
+    background: var(--cream-2);
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 20px;
+    padding: 14px 16px 12px;
+    text-align: left;
+}
+
+.rules-block--login {
+    margin-bottom: 20px;
+}
+
+.rules-section {
+    margin: 0 20px 18px;
+}
+
+.rules-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    text-align: center;
+    letter-spacing: .04em;
+}
+
+.rules-list {
+    margin: 0;
+    padding-left: 20px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.55;
+}
+.rules-list li { margin-bottom: 6px; }
+.rules-list li:last-child { margin-bottom: 0; }
+.rules-list em {
+    font-style: italic;
+    color: #555;
+    font-size: 11.5px;
+}
+
+/* ===== MAP (inside booth modal) ===== */
+.modal-map {
+    margin: 6px 0 16px;
+    text-align: center;
+}
+
+.modal-map-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.map-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.map-image-box {
+    position: relative;
+    background: white;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 16 / 10;
+    transition: transform .12s, box-shadow .12s;
+}
+.map-link:hover .map-image-box  { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.map-link:active .map-image-box { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+
+.map-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.map-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: repeating-linear-gradient(
+        45deg,
+        #fff8e7 0px,
+        #fff8e7 12px,
+        #fff0d0 12px,
+        #fff0d0 24px
+    );
+    color: var(--ink);
+}
+.map-placeholder-icon { font-size: 28px; }
+.map-placeholder-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    opacity: .7;
+}
+
+.map-caption {
+    margin-top: 8px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11.5px;
+    color: #555;
+    line-height: 1.4;
 }

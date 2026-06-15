@@ -10,6 +10,15 @@
     <div class="login-card">
         <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="login-logo">
 
+        <div class="rules-block rules-block--login">
+            <div class="rules-title">How it works</div>
+            <ol class="rules-list">
+                <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
+                <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
+                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+            </ol>
+        </div>
+
         <label class="login-label" for="loginInput">Enter your name to begin</label>
         <input type="text" id="loginInput" class="login-input" placeholder="e.g. Alex Tan" autocomplete="off" maxlength="30">
         <button id="loginBtn" class="login-btn" onclick="handleLogin()">Let's Go</button>
@@ -53,17 +62,20 @@
         <!-- BOOTH GRID -->
         <div class="checkpoint-grid">
             <% booths.forEach(function(booth, i) { %>
-            <div class="checkpoint-card"
+            <div class="checkpoint-card<%= booth.mandatory ? ' mandatory' : '' %>"
                  style="--accent:<%= booth.accent %>"
                  data-id="<%= booth.id %>"
                  data-name="<%= booth.name %>"
                  data-logo="<%= booth.logo %>"
+                 <% if (booth.mandatory) { %>data-mandatory="true"<% } %>
                  onclick="handleBoothClick(this)">
+                <% if (booth.mandatory) { %><div class="mandatory-badge">START HERE</div><% } %>
                 <img class="checkpoint-icon"
                      src="<%= booth.logo %>"
                      alt="<%= booth.name %>"
                      style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
                 <div class="checkpoint-name"><%= booth.name %></div>
+                <div class="lock-overlay" aria-hidden="true">🔒</div>
             </div>
             <% }); %>
         </div>
@@ -80,6 +92,16 @@
                 </div>
                 <% }); %>
             </div>
+        </div>
+
+        <!-- RULES (persistent while playing) -->
+        <div class="rules-section">
+            <div class="rules-title">How it works</div>
+            <ol class="rules-list">
+                <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
+                <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
+                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+            </ol>
         </div>
 
     </div>
@@ -104,7 +126,22 @@
     <div class="modal-content">
         <div class="modal-icon" id="modalIcon"></div>
         <h3 id="modalCheckpointName">Booth</h3>
-        <p>Enter the booth code:</p>
+
+        <div class="modal-map">
+            <div class="modal-map-label">Find this booth on the map</div>
+            <a href="#" class="map-link" id="mapLink" target="_blank" rel="noopener">
+                <div class="map-image-box">
+                    <img id="mapImage" src="" alt="VIVACE 2026 colour-coded venue map" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="map-placeholder">
+                        <span class="map-placeholder-icon">🗺️</span>
+                        <span class="map-placeholder-text">Map image goes here</span>
+                    </div>
+                </div>
+            </a>
+            <div class="map-caption">Tap the map to open full size · 🍱 = food booths</div>
+        </div>
+
+        <p>Ask the CCA rep to enter the booth code:</p>
         <input type="text" id="codeInput" placeholder="enter code" autocomplete="off" maxlength="30">
         <div class="modal-buttons">
             <button class="btn-verify" id="modalConfirmBtn">Confirm</button>
@@ -115,9 +152,11 @@
 </div>
 
 <script>
-    const BOOTH_CODES  = <%- JSON.stringify(boothCodes) %>;
-    const TOTAL_BOOTHS = <%= totalBooths %>;
-    const PRIZE_CONFIG = <%- JSON.stringify(prizeConfig) %>;
+    const BOOTH_CODES        = <%- JSON.stringify(boothCodes) %>;
+    const TOTAL_BOOTHS       = <%= totalBooths %>;
+    const PRIZE_CONFIG       = <%- JSON.stringify(prizeConfig) %>;
+    const MANDATORY_BOOTH_ID = <%- JSON.stringify(mandatoryBoothId) %>;
+    const MANDATORY_BOOTH_NAME = <%- JSON.stringify(mandatoryBoothName) %>;
 </script>
 <script src="/js/bingo.js"></script>
 

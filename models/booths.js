@@ -1,12 +1,14 @@
 const { simpleHash } = require('../utils/hash');
 
+// To change which booth must be visited first, move `mandatory: true` to a different booth.
 const booths = [
     {
-        id:       'b1',
-        name:     'SMU Cru',
-        logo:     '/images/smu-cru.png',
-        accent:   'var(--orange)',
-        codeHash: simpleHash('grace'),
+        id:        'b1',
+        name:      'SMU Cru',
+        logo:      '/images/smu-cru.png',
+        accent:    'var(--orange)',
+        codeHash:  simpleHash('grace'),
+        mandatory: true,
     },
     {
         id:       'b2',
