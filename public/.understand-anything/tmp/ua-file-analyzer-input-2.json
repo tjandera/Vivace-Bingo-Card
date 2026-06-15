@@ -1,0 +1,11 @@
+{
+  "projectRoot": "/Users/matth/Documents/Vivace-Bingo-Card/public",
+  "batchFiles": [
+    {"path": ".understand-anything/.understandignore", "language": "unknown", "sizeLines": 22, "fileCategory": "code"},
+    {"path": "js/bingo.js", "language": "javascript", "sizeLines": 253, "fileCategory": "code"}
+  ],
+  "batchImportData": {
+    ".understand-anything/.understandignore": [],
+    "js/bingo.js": []
+  }
+}

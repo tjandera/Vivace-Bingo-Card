@@ -1,0 +1,422 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 2,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 18,
+      "metrics": {}
+    },
+    {
+      "path": "js/bingo.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 253,
+      "nonEmptyLines": 223,
+      "functions": [
+        {
+          "name": "simpleHash",
+          "startLine": 12,
+          "endLine": 19,
+          "params": [
+            "str"
+          ]
+        },
+        {
+          "name": "visitedKey",
+          "startLine": 23,
+          "endLine": 23,
+          "params": [
+            "u"
+          ]
+        },
+        {
+          "name": "redeemedKey",
+          "startLine": 24,
+          "endLine": 24,
+          "params": [
+            "u"
+          ]
+        },
+        {
+          "name": "loadState",
+          "startLine": 43,
+          "endLine": 51,
+          "params": [
+            "username"
+          ]
+        },
+        {
+          "name": "saveState",
+          "startLine": 53,
+          "endLine": 56,
+          "params": []
+        },
+        {
+          "name": "updateUI",
+          "startLine": 59,
+          "endLine": 76,
+          "params": []
+        },
+        {
+          "name": "showLogin",
+          "startLine": 78,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "hideLogin",
+          "startLine": 79,
+          "endLine": 79,
+          "params": []
+        },
+        {
+          "name": "launchConfetti",
+          "startLine": 82,
+          "endLine": 132,
+          "params": []
+        },
+        {
+          "name": "showCongrats",
+          "startLine": 135,
+          "endLine": 139,
+          "params": []
+        },
+        {
+          "name": "closeModal",
+          "startLine": 193,
+          "endLine": 196,
+          "params": []
+        },
+        {
+          "name": "verifyCode",
+          "startLine": 198,
+          "endLine": 216,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "simpleHash",
+          "callee": "str.charCodeAt",
+          "lineNumber": 15
+        },
+        {
+          "caller": "simpleHash",
+          "callee": "h.toString",
+          "lineNumber": 18
+        },
+        {
+          "caller": "loadState",
+          "callee": "JSON.parse",
+          "lineNumber": 45
+        },
+        {
+          "caller": "loadState",
+          "callee": "localStorage.getItem",
+          "lineNumber": 45
+        },
+        {
+          "caller": "loadState",
+          "callee": "visitedKey",
+          "lineNumber": 45
+        },
+        {
+          "caller": "loadState",
+          "callee": "JSON.parse",
+          "lineNumber": 46
+        },
+        {
+          "caller": "loadState",
+          "callee": "localStorage.getItem",
+          "lineNumber": 46
+        },
+        {
+          "caller": "loadState",
+          "callee": "redeemedKey",
+          "lineNumber": 46
+        },
+        {
+          "caller": "saveState",
+          "callee": "localStorage.setItem",
+          "lineNumber": 54
+        },
+        {
+          "caller": "saveState",
+          "callee": "visitedKey",
+          "lineNumber": 54
+        },
+        {
+          "caller": "saveState",
+          "callee": "JSON.stringify",
+          "lineNumber": 54
+        },
+        {
+          "caller": "saveState",
+          "callee": "localStorage.setItem",
+          "lineNumber": 55
+        },
+        {
+          "caller": "saveState",
+          "callee": "redeemedKey",
+          "lineNumber": 55
+        },
+        {
+          "caller": "saveState",
+          "callee": "JSON.stringify",
+          "lineNumber": 55
+        },
+        {
+          "caller": "updateUI",
+          "callee": "document.querySelectorAll('.checkpoint-card').forEach",
+          "lineNumber": 60
+        },
+        {
+          "caller": "updateUI",
+          "callee": "document.querySelectorAll",
+          "lineNumber": 60
+        },
+        {
+          "caller": "updateUI",
+          "callee": "card.classList.toggle",
+          "lineNumber": 61
+        },
+        {
+          "caller": "updateUI",
+          "callee": "visitedBooths.includes",
+          "lineNumber": 61
+        },
+        {
+          "caller": "updateUI",
+          "callee": "Object.keys(PRIZE_CONFIG).forEach",
+          "lineNumber": 66
+        },
+        {
+          "caller": "updateUI",
+          "callee": "Object.keys",
+          "lineNumber": 66
+        },
+        {
+          "caller": "updateUI",
+          "callee": "document.querySelector",
+          "lineNumber": 67
+        },
+        {
+          "caller": "updateUI",
+          "callee": "Number",
+          "lineNumber": 69
+        },
+        {
+          "caller": "updateUI",
+          "callee": "redeemedPrizes.includes",
+          "lineNumber": 70
+        },
+        {
+          "caller": "updateUI",
+          "callee": "el.classList.toggle",
+          "lineNumber": 72
+        },
+        {
+          "caller": "updateUI",
+          "callee": "el.classList.toggle",
+          "lineNumber": 73
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "document.getElementById",
+          "lineNumber": 83
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "canvas.getContext",
+          "lineNumber": 84
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Array.from",
+          "lineNumber": 92
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 93
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 94
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 95
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 96
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.floor",
+          "lineNumber": 97
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 97
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 98
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 99
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 100
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Math.random",
+          "lineNumber": 101
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "Date.now",
+          "lineNumber": 104
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.clearRect",
+          "lineNumber": 108
+        },
+        {
+          "caller": "draw",
+          "callee": "pieces.forEach",
+          "lineNumber": 109
+        },
+        {
+          "caller": "draw",
+          "callee": "Math.random",
+          "lineNumber": 113
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.save",
+          "lineNumber": 114
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.translate",
+          "lineNumber": 115
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.rotate",
+          "lineNumber": 116
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.fillRect",
+          "lineNumber": 118
+        },
+        {
+          "caller": "draw",
+          "callee": "ctx.restore",
+          "lineNumber": 119
+        },
+        {
+          "caller": "draw",
+          "callee": "Date.now",
+          "lineNumber": 122
+        },
+        {
+          "caller": "draw",
+          "callee": "requestAnimationFrame",
+          "lineNumber": 123
+        },
+        {
+          "caller": "draw",
+          "callee": "cancelAnimationFrame",
+          "lineNumber": 125
+        },
+        {
+          "caller": "draw",
+          "callee": "setTimeout",
+          "lineNumber": 128
+        },
+        {
+          "caller": "launchConfetti",
+          "callee": "draw",
+          "lineNumber": 131
+        },
+        {
+          "caller": "showCongrats",
+          "callee": "launchConfetti",
+          "lineNumber": 136
+        },
+        {
+          "caller": "showCongrats",
+          "callee": "document.getElementById",
+          "lineNumber": 137
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "$input.value.trim",
+          "lineNumber": 200
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "simpleHash",
+          "lineNumber": 203
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "visitedBooths.push",
+          "lineNumber": 204
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "saveState",
+          "lineNumber": 205
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "updateUI",
+          "lineNumber": 206
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "closeModal",
+          "lineNumber": 207
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "setTimeout",
+          "lineNumber": 209
+        },
+        {
+          "caller": "verifyCode",
+          "callee": "$input.focus",
+          "lineNumber": 214
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 12,
+        "classCount": 0
+      }
+    }
+  ]
+}

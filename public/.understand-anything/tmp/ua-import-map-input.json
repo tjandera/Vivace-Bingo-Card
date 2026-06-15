@@ -1,0 +1,41 @@
+{
+  "projectRoot": "/Users/matth/Documents/Vivace-Bingo-Card/public",
+  "files": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "css/base.css",
+      "language": "css",
+      "sizeLines": 26,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/card.css",
+      "language": "css",
+      "sizeLines": 536,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/nav.css",
+      "language": "css",
+      "sizeLines": 66,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/tokens.css",
+      "language": "css",
+      "sizeLines": 16,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "js/bingo.js",
+      "language": "javascript",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    }
+  ]
+}

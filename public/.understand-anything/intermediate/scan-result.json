@@ -1,0 +1,71 @@
+{
+  "name": "Vivace Bingo Card — Public Assets",
+  "description": "Static front-end assets (CSS and JavaScript) for the VIVACE 2026 Stamp Card, a bingo-style stamp card web app served at SMU's CCA Fair. Styles and client-side logic are consumed by a parent Node.js/Express application via EJS templates.",
+  "languages": {
+    "css": 4,
+    "javascript": 1,
+    "unknown": 1
+  },
+  "frameworks": ["Express"],
+  "files": [
+    {
+      "path": ".understand-anything/.understandignore",
+      "language": "unknown",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "css/base.css",
+      "language": "css",
+      "sizeLines": 26,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/card.css",
+      "language": "css",
+      "sizeLines": 536,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/nav.css",
+      "language": "css",
+      "sizeLines": 66,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "css/tokens.css",
+      "language": "css",
+      "sizeLines": 16,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "js/bingo.js",
+      "language": "javascript",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    }
+  ],
+  "totalFiles": 6,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "small",
+  "stats": {
+    "filesScanned": 6,
+    "byCategory": {
+      "code": 2,
+      "markup": 4
+    },
+    "byLanguage": {
+      "unknown": 1,
+      "css": 4,
+      "javascript": 1
+    }
+  },
+  "importMap": {
+    ".understand-anything/.understandignore": [],
+    "css/base.css": [],
+    "css/card.css": [],
+    "css/nav.css": [],
+    "css/tokens.css": [],
+    "js/bingo.js": []
+  }
+}

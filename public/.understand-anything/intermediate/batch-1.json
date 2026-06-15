@@ -1,0 +1,101 @@
+{
+  "nodes": [
+    {
+      "id": "file:css/tokens.css",
+      "type": "file",
+      "label": "tokens.css",
+      "fileCategory": "markup",
+      "language": "css",
+      "summary": "Design token definitions for the entire VIVACE 2026 stamp card app. Declares all CSS custom properties on :root, including the full palette (red, green, orange, blue, yellow, pink, purple, cyan, mint), neutral tones (ink, cream, paper), and the navy nav background colour. All other CSS files consume these variables.",
+      "tags": [
+        "design-tokens",
+        "css-variables",
+        "colour-palette",
+        "theme",
+        "vivace"
+      ],
+      "complexity": "low",
+      "filePath": "css/tokens.css",
+      "sizeLines": 16
+    },
+    {
+      "id": "file:css/base.css",
+      "type": "file",
+      "label": "base.css",
+      "fileCategory": "markup",
+      "language": "css",
+      "summary": "Global reset and body-level styles. Applies a universal box-sizing reset, disables user selection across all elements (re-enables it for inputs), and sets the full-page layout with the Fredoka font, a blue textured background image (blu-bg.png), and a centred flex-column body.",
+      "tags": [
+        "reset",
+        "global-styles",
+        "body-layout",
+        "background",
+        "typography"
+      ],
+      "complexity": "low",
+      "filePath": "css/base.css",
+      "sizeLines": 26
+    },
+    {
+      "id": "file:css/nav.css",
+      "type": "file",
+      "label": "nav.css",
+      "fileCategory": "markup",
+      "language": "css",
+      "summary": "Styles for the sticky top navigation bar and the animated yellow marquee ticker below it. The nav uses the --nav-bg token for its dark navy background and hosts the VIVACE brand name on the left and an uppercase Montserrat label on the right. The marquee bar scrolls event text infinitely with a CSS animation and star-prefixed spans.",
+      "tags": [
+        "navigation",
+        "sticky-nav",
+        "marquee",
+        "animation",
+        "branding"
+      ],
+      "complexity": "low",
+      "filePath": "css/nav.css",
+      "sizeLines": 66
+    },
+    {
+      "id": "file:css/card.css",
+      "type": "file",
+      "label": "card.css",
+      "fileCategory": "markup",
+      "language": "css",
+      "summary": "The primary stylesheet for the VIVACE 2026 bingo/stamp card UI. Covers the full card layout including: the rounded card wrapper and header with decorative gradient overlay, participant name display and switch button, animated progress bar, a 3-column checkpoint grid where each booth card has a coloured accent bar and a bob animation, a prize redemption grid with locked/available/redeemed states, a full-screen login overlay with form inputs and error messaging, a PIN-entry modal for booth check-ins, and a congrats modal with a pop animation. Uses a neo-brutalist design language (thick ink borders, hard drop shadows, offset hover interactions) throughout.",
+      "tags": [
+        "bingo-card",
+        "modal",
+        "checkpoint-grid",
+        "prize",
+        "neo-brutalist",
+        "animation",
+        "login"
+      ],
+      "complexity": "high",
+      "filePath": "css/card.css",
+      "sizeLines": 536
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:css/base.css",
+      "target": "file:css/tokens.css",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:css/nav.css",
+      "target": "file:css/tokens.css",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:css/card.css",
+      "target": "file:css/tokens.css",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

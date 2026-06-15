@@ -1,0 +1,16 @@
+{
+  "scriptCompleted": true,
+  "stats": {
+    "filesScanned": 6,
+    "filesWithImports": 0,
+    "totalEdges": 0
+  },
+  "importMap": {
+    ".understand-anything/.understandignore": [],
+    "css/base.css": [],
+    "css/card.css": [],
+    "css/nav.css": [],
+    "css/tokens.css": [],
+    "js/bingo.js": []
+  }
+}
