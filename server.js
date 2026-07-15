@@ -8,6 +8,10 @@
    To add a new page:   create a controller, register a route, add a view.
    ========================================================================= */
 
+// Load .env for local dev (Vercel injects env vars natively in prod).
+// Uses Node 20.6+'s built-in loader so we don't need the dotenv package.
+try { process.loadEnvFile(); } catch (e) { /* no .env file — using shell env */ }
+
 const express = require("express");
 const path    = require("path");
 const routes  = require("./routes/index");

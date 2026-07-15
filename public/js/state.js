@@ -60,11 +60,26 @@
             }
         },
 
-        // Persist current progress back to localStorage
+        // Persist current progress back to localStorage.
+        // Wrapped in try/catch because localStorage.setItem can throw when
+        // the user is in private mode, storage is full, or cookies are
+        // blocked — without this the failure is silent and the tap looks
+        // like it did nothing.  Returns true on success, false otherwise.
         save: function () {
-            if (!this.currentUsername) return;
-            localStorage.setItem(visitedKey(this.currentUsername),  JSON.stringify(this.visitedBooths));
-            localStorage.setItem(redeemedKey(this.currentUsername), JSON.stringify(this.redeemedPrizes));
+            if (!this.currentUsername) return false;
+            try {
+                localStorage.setItem(visitedKey(this.currentUsername),  JSON.stringify(this.visitedBooths));
+                localStorage.setItem(redeemedKey(this.currentUsername), JSON.stringify(this.redeemedPrizes));
+                return true;
+            } catch (err) {
+                // Surface the failure so the user knows their progress isn't sticky.
+                var msg = 'Could not save progress — private browsing or storage full?';
+                if (window.Vivace && window.Vivace.UI && window.Vivace.UI.toast) {
+                    window.Vivace.UI.toast(msg);
+                }
+                console.error('[state] save failed:', err);
+                return false;
+            }
         },
 
         // Remember this username as the active one across page reloads
