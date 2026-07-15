@@ -29,7 +29,7 @@
 .card-header::before {
     content: '';
     position: absolute;
-    inset: 0;
+    top: 0; right: 0; bottom: 0; left: 0;
     background:
         radial-gradient(ellipse at 50% 0%, rgba(255,215,53,.18) 0%, transparent 70%),
         repeating-linear-gradient(
@@ -195,7 +195,7 @@
 .checkpoint-card .lock-overlay {
     display: none;
     position: absolute;
-    inset: 0;
+    top: 0; right: 0; bottom: 0; left: 0;
     background: rgba(20, 27, 77, 0.55);
     color: white;
     font-size: 26px;
@@ -334,7 +334,7 @@
 /* ===== LOGIN OVERLAY ===== */
 .login-overlay {
     position: fixed;
-    inset: 0;
+    top: 0; right: 0; bottom: 0; left: 0;
     background: var(--nav-bg);
     display: flex;
     align-items: center;
@@ -447,7 +447,7 @@
 .modal {
     display: none;
     position: fixed;
-    inset: 0;
+    top: 0; right: 0; bottom: 0; left: 0;
     background: rgba(20,27,77,.75);
     align-items: center;
     justify-content: center;
@@ -687,7 +687,7 @@
 
 .map-placeholder {
     position: absolute;
-    inset: 0;
+    top: 0; right: 0; bottom: 0; left: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -718,4 +718,177 @@
     font-size: 11.5px;
     color: #555;
     line-height: 1.4;
+}
+
+/* ===== MOBILE & CROSS-BROWSER ENHANCEMENTS ===== */
+
+/* Prevent background scroll when any overlay/modal is open */
+body.modal-open {
+    overflow: hidden;
+    /* iOS Safari: position:fixed stops scroll bleed on notched iPhones */
+    position: fixed;
+    width: 100%;
+    /* Preserve scroll position via CSS variable set in JS */
+    top: var(--scroll-y, 0);
+}
+
+/* Touch-friendly: kill tap delay on interactive elements */
+.checkpoint-card,
+.prize-circle,
+button,
+.switch-btn {
+    touch-action: manipulation;
+}
+
+/* Minimum 44px touch targets (Apple HIG / WCAG 2.5.5) */
+.checkpoint-card {
+    min-height: 88px;
+}
+
+.login-btn,
+.btn-verify,
+.btn-cancel {
+    min-height: 48px;
+}
+
+.switch-btn {
+    min-height: 36px;
+    min-width: 44px;
+}
+
+.prize-circle {
+    min-width: 60px;
+    min-height: 60px;
+}
+
+/* Safe-area insets for notched devices */
+.card-wrapper {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Keyboard focus ring — only shown for keyboard users, not mouse/touch */
+:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.checkpoint-card:focus-visible {
+    outline: 3px solid var(--blue);
+    outline-offset: 3px;
+    border-radius: 20px;
+}
+
+/* iOS/Safari: smooth scrolling inside modals */
+.login-overlay,
+.modal {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* ===== TOAST NOTIFICATION ===== */
+#toast {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: white;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 22px;
+    border-radius: 40px;
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.35);
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    -webkit-transition: opacity 0.25s ease, -webkit-transform 0.25s ease;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    -webkit-transform: translateX(-50%) translateY(-6px);
+    transform: translateX(-50%) translateY(-6px);
+    max-width: calc(100vw - 32px);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#toast.show {
+    opacity: 1;
+    -webkit-transform: translateX(-50%) translateY(0);
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ===== CONFIRM MODAL MESSAGE ===== */
+.confirm-message {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        -webkit-animation-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        -webkit-animation-iteration-count: 1 !important;
+        animation-iteration-count: 1 !important;
+        -webkit-transition-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+/* Very small phones (< 360px) */
+@media (max-width: 359px) {
+    .checkpoint-grid {
+        gap: 8px;
+        padding: 12px 12px;
+    }
+    .checkpoint-card {
+        padding: 10px 4px 8px;
+    }
+    .checkpoint-icon {
+        width: 42px;
+        height: 42px;
+    }
+    .checkpoint-name {
+        font-size: 10px;
+    }
+    .card-wrapper {
+        padding: 16px 10px 0;
+    }
+}
+
+/* Landscape mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-card {
+        padding: 18px 24px 18px;
+    }
+    .login-logo {
+        height: 48px;
+        margin-bottom: 14px;
+    }
+    .card-header {
+        padding: 14px 22px 12px;
+    }
+    .header-logo {
+        height: 72px;
+    }
+}
+
+/* Tablet and up — cap card width and center */
+@media (min-width: 540px) {
+    .card-wrapper {
+        max-width: 480px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
 }

@@ -6,8 +6,9 @@
 <body>
 
 <!-- LOGIN OVERLAY — shown on first visit, hidden by JS after name is entered -->
-<div id="loginOverlay" class="login-overlay">
+<div id="loginOverlay" class="login-overlay" role="dialog" aria-modal="true" aria-labelledby="loginHeading">
     <div class="login-card">
+        <h2 id="loginHeading" class="sr-only">VIVACE 2026 Stamp Card — Enter your name to begin</h2>
         <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="login-logo">
 
         <div class="rules-block rules-block--login">
@@ -54,7 +55,13 @@
         <!-- PROGRESS -->
         <div class="progress-area">
             <div class="progress-text">Booths visited: <span id="progressCount">0</span> / <%= totalBooths %></div>
-            <div class="progress-bar-bg">
+            <div class="progress-bar-bg"
+                 role="progressbar"
+                 aria-valuemin="0"
+                 aria-valuemax="<%= totalBooths %>"
+                 aria-valuenow="0"
+                 aria-label="Booths visited"
+                 id="progressBar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
@@ -108,21 +115,32 @@
 </div>
 
 <!-- CONFETTI CANVAS -->
-<canvas id="confettiCanvas" style="position:fixed;inset:0;pointer-events:none;z-index:9997;display:none;"></canvas>
+<canvas id="confettiCanvas" style="position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:9997;display:none;" aria-hidden="true"></canvas>
 
 <!-- CONGRATS MODAL -->
-<div id="congratsModal" class="modal congrats-modal">
+<div id="congratsModal" class="modal congrats-modal" role="dialog" aria-modal="true" aria-labelledby="congratsTitle">
     <div class="modal-content congrats-content">
-        <div class="congrats-emoji">🎉</div>
+        <div class="congrats-emoji" aria-hidden="true">🎉</div>
         <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="congrats-logo">
-        <h2 class="congrats-title">You Did It!</h2>
-        <p class="congrats-text">You've visited all 9 booths — head to the prize counter to claim your reward!</p>
+        <h2 id="congratsTitle" class="congrats-title">You Did It!</h2>
+        <p class="congrats-text">You've visited all 12 booths — head to the prize counter to claim your reward!</p>
         <button class="btn-verify congrats-btn" id="congratsCloseBtn">Claim My Prize</button>
     </div>
 </div>
 
-<!-- MODAL -->
-<div id="codeModal" class="modal">
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmText">
+    <div class="modal-content">
+        <p id="confirmText" class="confirm-message"></p>
+        <div class="modal-buttons">
+            <button class="btn-verify" id="confirmOkBtn">Confirm</button>
+            <button class="btn-cancel"  id="confirmCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- CODE ENTRY MODAL -->
+<div id="codeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalCheckpointName">
     <div class="modal-content">
         <div class="modal-icon" id="modalIcon"></div>
         <h3 id="modalCheckpointName">Booth</h3>
@@ -150,6 +168,12 @@
         <div id="modalError" class="modal-error"></div>
     </div>
 </div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- SCREEN READER LIVE ANNOUNCER -->
+<div id="liveAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <script>
     const BOOTH_CODES        = <%- JSON.stringify(boothCodes) %>;

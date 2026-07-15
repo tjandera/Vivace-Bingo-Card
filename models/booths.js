@@ -3,12 +3,19 @@ const { simpleHash } = require('../utils/hash');
 // To change which booth must be visited first, move `mandatory: true` to a different booth.
 const booths = [
     {
-        id:        'b1',
-        name:      'SMU Cru',
-        logo:      '/images/smu-cru.png',
-        accent:    'var(--orange)',
-        codeHash:  simpleHash('grace'),
+        id:        'b0',
+        name:      "Vivace's Gamebooth",
+        logo:      '/images/vivace-logo.png',
+        accent:    'var(--yellow)',
+        codeHash:  simpleHash('vivace'),
         mandatory: true,
+    },
+    {
+        id:       'b1',
+        name:     'SMU Cru',
+        logo:     '/images/smu-cru.png',
+        accent:   'var(--orange)',
+        codeHash: simpleHash('grace'),
     },
     {
         id:       'b2',
@@ -65,6 +72,20 @@ const booths = [
         logo:     '/images/smu-sic.png',
         accent:   'var(--mint)',
         codeHash: simpleHash('impact'),
+    },
+    {
+        id:       'b10',
+        name:     'Booth 10',
+        logo:     '/images/vivace-logo.png',
+        accent:   'var(--orange)',
+        codeHash: simpleHash('booth10'),
+    },
+    {
+        id:       'b11',
+        name:     'Booth 11',
+        logo:     '/images/vivace-logo.png',
+        accent:   'var(--blue)',
+        codeHash: simpleHash('booth11'),
     },
 ];
 

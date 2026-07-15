@@ -1,18 +1,32 @@
-* {
+/* ===== RESET & BASE ===== */
+*, *::before, *::after {
     box-sizing: border-box;
+    -webkit-user-select: none;
+    -moz-user-select: none;
     user-select: none;
     margin: 0;
     padding: 0;
 }
 
-input {
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
     user-select: text;
     cursor: text;
 }
 
+html {
+    /* Prevent font inflation on mobile browsers */
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 body {
     font-family: 'Fredoka', system-ui, sans-serif;
+    /* 100vh fallback for browsers that don't support dvh */
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -21,6 +35,26 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    /* Use max() for browsers that support it, fall back to 48px */
     padding-bottom: 48px;
+    padding-bottom: max(48px, env(safe-area-inset-bottom, 0px));
     overflow-x: hidden;
+    /* Remove tap flash on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Smoother font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Visually hidden but accessible to screen readers */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
 }
