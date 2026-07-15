@@ -24,11 +24,11 @@ server.set("view engine", "ejs");
 
 // --- Static assets ----------------------------------------------------
 // Serves everything in public/ at the URL root, e.g. /css/card.css.
-// maxAge caches images/CSS/JS in the browser for one day — big speedup on
-// repeat visits.  Rendered HTML (EJS) is not cached so template changes
-// always show up on the next reload.
+// maxAge caches CSS/JS/images in the browser.  Kept short (1 hour) so
+// deployed changes appear on phones without needing a hard refresh.
+// Bump this to '1d' or '7d' once the app stabilises for a real speedup.
 server.use(express.static(path.join(__dirname, "public"), {
-    maxAge: "1d",
+    maxAge: "1h",
     etag:   true,
 }));
 

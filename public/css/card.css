@@ -228,8 +228,8 @@
     border-radius: 18px;
 }
 .checkpoint-card .lock-overlay svg {
-    width: 30px;
-    height: 30px;
+    width: 22px;
+    height: 22px;
 }
 .checkpoint-card.locked {
     cursor: not-allowed;
@@ -387,8 +387,8 @@
     text-align: center;
 }
 .prize-placeholder svg {
-    width: 32px;
-    height: 32px;
+    width: 22px;
+    height: 22px;
 }
 .prize-placeholder-label {
     font-family: 'Space Mono', monospace;
