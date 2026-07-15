@@ -1,0 +1,86 @@
+<%#
+    card.ejs — The main stamp card shown after login.
+    Renders the participant header, progress bar, booth grid, prizes, and rules.
+    Booth data comes from models/booths.js  ·  Prize data comes from models/prizes.js.
+%>
+<div class="card-wrapper">
+    <div class="card">
+
+        <!-- Card header (Vivace logo) -->
+        <div class="card-header">
+            <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="header-logo">
+        </div>
+
+        <!-- Participant row: name pill + install button + switch-user button -->
+        <div class="participant-section">
+            <span class="participant-label">Cardholder</span>
+            <div class="participant-name-row">
+                <span id="nameDisplay">—</span>
+                <button class="install-btn-mini" data-install-trigger title="Install as an app" aria-label="Add to home screen">
+                    <span aria-hidden="true">📲</span> Install
+                </button>
+                <button class="switch-btn" id="switchUserBtn" title="Switch user">Switch</button>
+            </div>
+        </div>
+
+        <!-- Progress bar (fills up as booths are visited) -->
+        <div class="progress-area">
+            <div class="progress-text">Booths visited: <span id="progressCount">0</span> / <%= totalBooths %></div>
+            <div class="progress-bar-bg"
+                 role="progressbar"
+                 aria-valuemin="0"
+                 aria-valuemax="<%= totalBooths %>"
+                 aria-valuenow="0"
+                 aria-label="Booths visited"
+                 id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- Booth grid — one card per booth in models/booths.js -->
+        <div class="checkpoint-grid">
+            <% booths.forEach(function(booth, i) { %>
+            <div class="checkpoint-card<%= booth.mandatory ? ' mandatory' : '' %>"
+                 style="--accent:<%= booth.accent %>"
+                 data-id="<%= booth.id %>"
+                 data-name="<%= booth.name %>"
+                 data-logo="<%= booth.logo %>"
+                 <% if (booth.mandatory) { %>data-mandatory="true"<% } %>
+                 onclick="handleBoothClick(this)">
+                <% if (booth.mandatory) { %><div class="mandatory-badge">START HERE</div><% } %>
+                <img class="checkpoint-icon"
+                     src="<%= booth.logo %>"
+                     alt="<%= booth.name %>"
+                     style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
+                <div class="checkpoint-name"><%= booth.name %></div>
+                <div class="lock-overlay" aria-hidden="true">🔒</div>
+            </div>
+            <% }); %>
+        </div>
+
+        <!-- Prizes — unlocked as stamp count crosses each threshold -->
+        <div class="prize-section">
+            <div class="prize-title">Prizes</div>
+            <div class="prize-grid">
+                <% prizes.forEach(function(prize) { %>
+                <div class="prize-circle" data-prize="<%= prize.id %>" onclick="handlePrizeClick(<%= prize.id %>)">
+                    <div class="prize-icon"><%= prize.icon %></div>
+                    <div class="prize-label"><%= prize.stampsRequired %> stamps</div>
+                    <div class="prize-req"><%= prize.label %></div>
+                </div>
+                <% }); %>
+            </div>
+        </div>
+
+        <!-- Rules block (repeated for reference while playing) -->
+        <div class="rules-section">
+            <div class="rules-title">How it works</div>
+            <ol class="rules-list">
+                <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
+                <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
+                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+            </ol>
+        </div>
+
+    </div>
+</div>

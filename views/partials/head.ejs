@@ -1,15 +1,34 @@
+<%#
+    head.ejs — Everything that goes inside <head>.
+    Order matters: preconnect first, then Google Fonts, then our CSS
+    (tokens → base → card → modals → install so cascade order is intuitive).
+    Meta tags at the top enable PWA / Add-to-Home-Screen behaviour on iOS.
+%>
+
+<!-- Basic viewport + charset -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<!-- Theme + PWA -->
 <meta name="theme-color" content="#141B4D">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vivace">
 <meta name="format-detection" content="telephone=no, email=no, address=no">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/images/vivace-logo.png">
+
 <title><%= pageTitle %></title>
+
+<!-- Google Fonts (preconnect saves ~100ms on first paint) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Fredoka:wght@300..700&family=Space+Mono:ital,wght@0,400;0,700&family=Montserrat:wght@600;700;800&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/tokens.css">
-<link rel="stylesheet" href="/css/base.css">
-<link rel="stylesheet" href="/css/nav.css">
-<link rel="stylesheet" href="/css/card.css">
+
+<!-- Our CSS — load order matters for cascade -->
+<link rel="stylesheet" href="/css/tokens.css">   <!-- CSS custom properties (colours) -->
+<link rel="stylesheet" href="/css/base.css">     <!-- Reset + body + mobile fixes -->
+<link rel="stylesheet" href="/css/card.css">     <!-- Main stamp-card layout -->
+<link rel="stylesheet" href="/css/modals.css">   <!-- Login overlay + modals + toast -->
+<link rel="stylesheet" href="/css/install.css">  <!-- iOS Add-to-Home-Screen UI -->

@@ -1,0 +1,226 @@
+/* =========================================================================
+   install.css — "Install as an App" feature (iOS Add-to-Home-Screen).
+   Contains: full-width CTA button (login), mini pill button (participant row),
+             install-instructions modal, and share-button chips used inside it.
+   Behaviour lives in js/install.js.
+   ========================================================================= */
+
+
+/* ===== CTA BUTTON (large, in login overlay) ===== */
+.install-cta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: var(--blue);
+    color: white;
+    border: 2.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    border-radius: 20px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    -webkit-transition: transform .12s, box-shadow .12s;
+    transition: transform .12s, box-shadow .12s;
+}
+.install-cta:hover  { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 var(--ink); }
+.install-cta:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+
+.install-cta-icon { font-size: 24px; line-height: 1; flex-shrink: 0; }
+
+.install-cta-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.install-cta-title {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    line-height: 1.2;
+}
+
+.install-cta-sub {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    opacity: .85;
+    line-height: 1.3;
+}
+
+
+/* ===== MINI PILL (small, in participant row) ===== */
+.install-btn-mini {
+    background: var(--blue);
+    color: white;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 30px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    min-height: 30px;
+    white-space: nowrap;
+    -webkit-transition: transform .1s, box-shadow .1s;
+    transition: transform .1s, box-shadow .1s;
+}
+.install-btn-mini:hover  { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+.install-btn-mini:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
+
+
+/* Hide install buttons entirely when the app is already running from the home screen.
+   install.js adds .pwa-installed to <body> when navigator.standalone === true. */
+body.pwa-installed .install-cta,
+body.pwa-installed .install-btn-mini { display: none; }
+
+
+/* ===== INSTALL INSTRUCTIONS MODAL ===== */
+.install-modal-content {
+    max-width: 400px;
+    text-align: left;
+    padding: 26px 22px 22px;
+}
+
+.install-logo {
+    height: 56px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 12px;
+}
+
+.install-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    text-align: center;
+    letter-spacing: .03em;
+}
+
+.install-subtitle {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px;
+    color: #555;
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.install-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.install-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 14px;
+    padding: 10px 12px;
+}
+
+.install-step-num {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    border-radius: 50%;
+    background: var(--blue);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+    border: 2px solid var(--ink);
+    flex-shrink: 0;
+}
+
+.install-step-body {
+    flex: 1;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.55;
+    font-weight: 500;
+}
+
+
+/* ===== SHARE CHIPS (inline visual references to iOS Safari buttons) ===== */
+.ios-share-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 2px 8px 2px 5px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Green variant for the "Add to Home Screen" step */
+.ios-share-chip--add {
+    background: #f0fdf4;
+    border-color: #bbf7d0;
+    color: #15803d;
+    padding: 2px 8px;
+}
+
+.ios-share-plus {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid currentColor;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.ios-share-svg {
+    width: 14px;
+    height: 14px;
+    display: block;
+    flex-shrink: 0;
+}
+
+
+/* Note shown on non-iOS devices (Android etc.) — toggled by install.js */
+.install-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background: #fff8e7;
+    border: 2px solid var(--orange);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.5;
+}
+
+.install-close-btn { width: 100%; }

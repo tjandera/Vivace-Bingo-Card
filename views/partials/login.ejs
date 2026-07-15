@@ -1,0 +1,45 @@
+<%#
+    login.ejs — The full-screen name-entry overlay that greets first-time visitors.
+    JS toggles it via #loginOverlay.  Once a name is saved to localStorage, hideLogin() removes it.
+    To change the welcome text or rules, edit the strings below.
+%>
+<div id="loginOverlay" class="login-overlay" role="dialog" aria-modal="true" aria-labelledby="loginHeading">
+    <div class="login-card">
+        <h2 id="loginHeading" class="sr-only">VIVACE 2026 Stamp Card — Enter your name to begin</h2>
+        <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="login-logo">
+
+        <!-- Rules block shown before login so users know what to expect -->
+        <div class="rules-block rules-block--login">
+            <div class="rules-title">How it works</div>
+            <ol class="rules-list">
+                <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
+                <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
+                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+            </ol>
+        </div>
+
+        <!-- Name entry -->
+        <label class="login-label" for="loginInput">Enter your name to begin</label>
+        <input type="text" id="loginInput" class="login-input" placeholder="e.g. Alex Tan" autocomplete="off" maxlength="30">
+        <button id="loginBtn" class="login-btn" onclick="handleLogin()">Let's Go</button>
+        <div id="loginError" class="login-error"></div>
+
+        <!-- Warning about localStorage scope -->
+        <div class="login-notice">
+            <span class="notice-icon">⚠️</span>
+            <div>
+                Your stamp progress is saved in <strong>this browser only</strong>.
+                Switching devices, clearing your browser data, or using incognito mode will reset your card.
+            </div>
+        </div>
+
+        <!-- Install-as-app CTA (opens installModal — see modals.ejs) -->
+        <button type="button" class="install-cta" data-install-trigger aria-label="Add Vivace to your home screen">
+            <span class="install-cta-icon" aria-hidden="true">📲</span>
+            <span class="install-cta-text">
+                <span class="install-cta-title">Install as an App</span>
+                <span class="install-cta-sub">Add Vivace to your iPhone home screen</span>
+            </span>
+        </button>
+    </div>
+</div>

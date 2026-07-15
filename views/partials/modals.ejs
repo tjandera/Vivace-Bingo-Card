@@ -1,0 +1,134 @@
+<%#
+    modals.ejs — All overlays and floating UI elements:
+      · Confetti canvas   (drawn by launchConfetti in ui.js when the card completes)
+      · Congrats modal    (shown after visiting every booth)
+      · Confirm modal     (generic yes/no prompt, used by prize redemption)
+      · Code entry modal  (opens when a booth is tapped)
+      · Toast             (small transient notifications)
+      · Live announcer    (screen reader messages)
+      · Install modal     (iOS "Add to Home Screen" instructions)
+    Each modal is hidden by default and toggled via JS.
+%>
+
+<!-- CONFETTI CANVAS — full-screen, hidden until launchConfetti() draws on it -->
+<canvas id="confettiCanvas" style="position:fixed;top:0;right:0;bottom:0;left:0;pointer-events:none;z-index:9997;display:none;" aria-hidden="true"></canvas>
+
+<!-- CONGRATS MODAL — shown once all booths are stamped -->
+<div id="congratsModal" class="modal congrats-modal" role="dialog" aria-modal="true" aria-labelledby="congratsTitle">
+    <div class="modal-content congrats-content">
+        <div class="congrats-emoji" aria-hidden="true">🎉</div>
+        <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="congrats-logo">
+        <h2 id="congratsTitle" class="congrats-title">You Did It!</h2>
+        <p class="congrats-text">You've visited all <%= totalBooths %> booths — head to the prize counter to claim your reward!</p>
+        <button class="btn-verify congrats-btn" id="congratsCloseBtn">Claim My Prize</button>
+    </div>
+</div>
+
+<!-- CONFIRM MODAL — generic yes/no prompt, driven by showConfirm() in ui.js -->
+<div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmText">
+    <div class="modal-content">
+        <p id="confirmText" class="confirm-message"></p>
+        <div class="modal-buttons">
+            <button class="btn-verify" id="confirmOkBtn">Confirm</button>
+            <button class="btn-cancel"  id="confirmCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- CODE ENTRY MODAL — opens when a booth is tapped, asks the CCA rep for the code -->
+<div id="codeModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalCheckpointName">
+    <div class="modal-content">
+        <div class="modal-icon" id="modalIcon"></div>
+        <h3 id="modalCheckpointName">Booth</h3>
+
+        <!-- Map preview so users can find the booth easily -->
+        <div class="modal-map">
+            <div class="modal-map-label">Find this booth on the map</div>
+            <a href="#" class="map-link" id="mapLink" target="_blank" rel="noopener">
+                <div class="map-image-box">
+                    <img id="mapImage" src="" alt="VIVACE 2026 colour-coded venue map" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="map-placeholder">
+                        <span class="map-placeholder-icon">🗺️</span>
+                        <span class="map-placeholder-text">Map image goes here</span>
+                    </div>
+                </div>
+            </a>
+            <div class="map-caption">Tap the map to open full size · 🍱 = food booths</div>
+        </div>
+
+        <p>Ask the CCA rep to enter the booth code:</p>
+        <input type="text" id="codeInput" placeholder="enter code" autocomplete="off" maxlength="30">
+        <div class="modal-buttons">
+            <button class="btn-verify" id="modalConfirmBtn">Confirm</button>
+            <button class="btn-cancel"  id="modalCancelBtn">Cancel</button>
+        </div>
+        <div id="modalError" class="modal-error"></div>
+    </div>
+</div>
+
+<!-- TOAST — small transient banner, driven by showToast() -->
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- SCREEN READER LIVE REGION — announce() writes here for accessibility -->
+<div id="liveAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+<!-- INSTALL MODAL — iOS Add-to-Home-Screen instructions -->
+<div id="installModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="installTitle">
+    <div class="modal-content install-modal-content">
+        <img src="/images/vivace-logo.png" alt="Vivace" class="install-logo">
+        <h3 id="installTitle" class="install-title">Add to Home Screen</h3>
+        <p class="install-subtitle">Install Vivace as an app on your iPhone so you can open your stamp card in one tap.</p>
+
+        <ol class="install-steps">
+            <li class="install-step">
+                <span class="install-step-num">1</span>
+                <div class="install-step-body">
+                    <div>Open this page in <strong>Safari</strong> (not Chrome or in-app browsers).</div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">2</span>
+                <div class="install-step-body">
+                    <div>Tap the
+                        <span class="ios-share-chip">
+                            <svg class="ios-share-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="8 6 12 2 16 6"/>
+                                <line x1="12" y1="2" x2="12" y2="15"/>
+                                <path d="M20 14v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-5"/>
+                            </svg>
+                            Share
+                        </span>
+                        button at the bottom of Safari.
+                    </div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">3</span>
+                <div class="install-step-body">
+                    <div>Scroll down and tap
+                        <span class="ios-share-chip ios-share-chip--add">
+                            <span class="ios-share-plus">+</span>
+                            Add to Home Screen
+                        </span>
+                    </div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">4</span>
+                <div class="install-step-body">
+                    <div>Tap <strong>Add</strong> — Vivace will appear on your home screen like a real app!</div>
+                </div>
+            </li>
+        </ol>
+
+        <!-- Shown only on non-iOS devices (install.js toggles this) -->
+        <div class="install-note" id="installNoteAndroid" style="display:none;">
+            <span class="notice-icon">📱</span>
+            <div>Android support is coming soon. For now, the card works great in your mobile browser.</div>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="btn-verify install-close-btn" id="installCloseBtn">Got it!</button>
+        </div>
+    </div>
+</div>
