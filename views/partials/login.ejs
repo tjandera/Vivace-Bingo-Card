@@ -14,7 +14,7 @@
             <ol class="rules-list">
                 <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
                 <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
-                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+                <li>Earn a prize after every 4 checkpoints — head to the registration booth to claim your prize!</li>
             </ol>
         </div>
 
@@ -26,7 +26,13 @@
 
         <!-- Warning about localStorage scope -->
         <div class="login-notice">
-            <span class="notice-icon">⚠️</span>
+            <span class="notice-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+            </span>
             <div>
                 Your stamp progress is saved in <strong>this browser only</strong>.
                 Switching devices, clearing your browser data, or using incognito mode will reset your card.
@@ -35,7 +41,13 @@
 
         <!-- Install-as-app CTA (opens installModal — see modals.ejs) -->
         <button type="button" class="install-cta" data-install-trigger aria-label="Add Vivace to your home screen">
-            <span class="install-cta-icon" aria-hidden="true">📲</span>
+            <span class="install-cta-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2.5"/>
+                    <path d="M12 8v7"/>
+                    <path d="M9 12l3 3 3-3"/>
+                </svg>
+            </span>
             <span class="install-cta-text">
                 <span class="install-cta-title">Install as an App</span>
                 <span class="install-cta-sub">Add Vivace to your iPhone home screen</span>

@@ -2,6 +2,10 @@
     card.ejs — The main stamp card shown after login.
     Renders the participant header, progress bar, booth grid, prizes, and rules.
     Booth data comes from models/booths.js  ·  Prize data comes from models/prizes.js.
+
+    Prize photos: drop your product images at public/images/prize-1.png,
+    prize-2.png, prize-3.png (paths defined in models/prizes.js).  If a file
+    is missing the placeholder SVG shows automatically.
 %>
 <div class="card-wrapper">
     <div class="card">
@@ -17,7 +21,12 @@
             <div class="participant-name-row">
                 <span id="nameDisplay">—</span>
                 <button class="install-btn-mini" data-install-trigger title="Install as an app" aria-label="Add to home screen">
-                    <span aria-hidden="true">📲</span> Install
+                    <svg class="install-btn-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="5" y="2" width="14" height="20" rx="2.5"/>
+                        <path d="M12 8v7"/>
+                        <path d="M9 12l3 3 3-3"/>
+                    </svg>
+                    Install
                 </button>
                 <button class="switch-btn" id="switchUserBtn" title="Switch user">Switch</button>
             </div>
@@ -37,7 +46,7 @@
             </div>
         </div>
 
-        <!-- Booth grid — one card per booth in models/booths.js -->
+        <!-- Booth grid — one card per booth in models/booths.js (renders 3 columns × 4 rows) -->
         <div class="checkpoint-grid">
             <% booths.forEach(function(booth, i) { %>
             <div class="checkpoint-card<%= booth.mandatory ? ' mandatory' : '' %>"
@@ -53,20 +62,43 @@
                      alt="<%= booth.name %>"
                      style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
                 <div class="checkpoint-name"><%= booth.name %></div>
-                <div class="lock-overlay" aria-hidden="true">🔒</div>
+                <div class="lock-overlay" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="11" width="16" height="10" rx="2"/>
+                        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                    </svg>
+                </div>
             </div>
             <% }); %>
         </div>
 
-        <!-- Prizes — unlocked as stamp count crosses each threshold -->
+        <!-- Prizes — unlocked as stamp count crosses each threshold.
+             Each tile shows the product photo (from prize.image) with a
+             gift-box placeholder fallback if the file is missing. -->
         <div class="prize-section">
             <div class="prize-title">Prizes</div>
             <div class="prize-grid">
                 <% prizes.forEach(function(prize) { %>
-                <div class="prize-circle" data-prize="<%= prize.id %>" onclick="handlePrizeClick(<%= prize.id %>)">
-                    <div class="prize-icon"><%= prize.icon %></div>
-                    <div class="prize-label"><%= prize.stampsRequired %> stamps</div>
-                    <div class="prize-req"><%= prize.label %></div>
+                <div class="prize-tile" data-prize="<%= prize.id %>" onclick="handlePrizeClick(<%= prize.id %>)">
+                    <div class="prize-image">
+                        <img src="<%= prize.image %>"
+                             alt="<%= prize.label %>"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="prize-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 12 20 22 4 22 4 12"/>
+                                <rect x="2" y="7" width="20" height="5"/>
+                                <line x1="12" y1="22" x2="12" y2="7"/>
+                                <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                                <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                            </svg>
+                            <span class="prize-placeholder-label">Prize <%= prize.id %> photo</span>
+                        </div>
+                    </div>
+                    <div class="prize-meta">
+                        <div class="prize-label"><%= prize.label %></div>
+                        <div class="prize-req"><%= prize.stampsRequired %> stamps</div>
+                    </div>
                 </div>
                 <% }); %>
             </div>
@@ -78,7 +110,7 @@
             <ol class="rules-list">
                 <li>Collect codes by visiting the required booths. <em>Hint: each circle's colour shows which cluster the booth belongs to and where to find it on the map.</em></li>
                 <li>After visiting the booth, the CCA representative will input the code onto your phone.</li>
-                <li>Earn a prize after every 3 checkpoints — head to the registration booth to claim your prize!</li>
+                <li>Earn a prize after every 4 checkpoints — head to the registration booth to claim your prize!</li>
             </ol>
         </div>
 

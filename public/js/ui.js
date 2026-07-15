@@ -161,9 +161,9 @@
             $bar.setAttribute('aria-valuetext', n + ' of ' + TOTAL_BOOTHS + ' booths visited');
         }
 
-        // --- Prize circles ---
+        // --- Prize tiles ---
         Object.keys(PRIZE_CONFIG).forEach(function (key) {
-            var el = document.querySelector('.prize-circle[data-prize="' + key + '"]');
+            var el = document.querySelector('.prize-tile[data-prize="' + key + '"]');
             if (!el) return;
             var pid       = Number(key);
             var isRedeemed = redeemed.indexOf(pid) !== -1;

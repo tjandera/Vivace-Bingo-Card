@@ -118,13 +118,13 @@
             return;
         }
         $lastFocused = document.querySelector(
-            '.prize-circle[data-prize="' + prizeId + '"]');
+            '.prize-tile[data-prize="' + prizeId + '"]');
         UI.confirm('Redeem Prize ' + prizeId + '? (' + needed + ' stamps required)',
             function () {
                 State.redeemedPrizes.push(prizeId);
                 State.save();
                 UI.render();
-                UI.toast('🎉 Prize redeemed! Head to the prize counter.');
+                UI.toast('Prize redeemed! Head to the prize counter.');
                 UI.announce('Prize ' + prizeId + ' successfully redeemed!');
             });
     };
