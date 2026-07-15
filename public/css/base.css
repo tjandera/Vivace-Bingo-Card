@@ -15,6 +15,14 @@ input, textarea {
     cursor: text;
 }
 
+/* Safari SVG-in-flex safety net: SVGs with only a viewBox (no width/height
+   attributes) can be stretched by flex containers on iOS Safari, blowing up
+   to fill the parent. flex-shrink: 0 stops them from growing beyond the size
+   set by CSS or their intrinsic dimensions. */
+svg {
+    flex-shrink: 0;
+}
+
 html {
     /* Prevent font inflation on mobile browsers */
     -webkit-text-size-adjust: 100%;

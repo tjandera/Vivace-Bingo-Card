@@ -6,16 +6,22 @@
    ========================================================================= */
 
 
-/* ===== LOGIN OVERLAY ===== */
+/* ===== LOGIN OVERLAY =====
+   NOTE: `align-items: flex-start` (not center) + `margin: auto 0` on the card
+   is critical for tall content — plain center-align clips the top of the card
+   when the content overflows the viewport (a classic flexbox gotcha). */
 .login-overlay {
     position: fixed;
     top: 0; right: 0; bottom: 0; left: 0;
     background: var(--nav-bg);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 200;
     padding: 20px;
+    /* Respect iOS notches / status bars */
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
@@ -26,18 +32,22 @@
     border-radius: 36px;
     border: 3px solid var(--ink);
     box-shadow: 6px 6px 0 var(--ink);
-    padding: 32px 24px 28px;
+    padding: 28px 22px 24px;
     max-width: 360px;
     width: 100%;
     text-align: center;
+    /* Auto vertical margins visually center the card when content fits the
+       viewport, and collapse to 0 when it doesn't — so long content scrolls
+       naturally without the top being clipped. */
+    margin: auto 0;
 }
 
 .login-logo {
-    height: 64px;
+    height: 60px;
     width: auto;
     object-fit: contain;
     display: block;
-    margin: 0 auto 24px;
+    margin: 0 auto 18px;
 }
 
 .login-label {
@@ -128,10 +138,24 @@
     opacity: .85;
 }
 
-/* Landscape mobile — shrink login card so it fits above keyboard */
-@media (max-height: 600px) and (orientation: landscape) {
-    .login-card { padding: 18px 24px 18px; }
-    .login-logo { height: 48px; margin-bottom: 14px; }
+/* Small phones (iPhone SE, older Androids) — tighten spacing so everything fits */
+@media (max-width: 400px) {
+    .login-overlay { padding: 14px 12px; }
+    .login-card    { padding: 22px 16px 20px; border-radius: 28px; }
+    .login-logo    { height: 52px; margin-bottom: 14px; }
+    .login-label   { font-size: 14px; margin-bottom: 8px; }
+    .login-input   { padding: 10px 16px; font-size: 15px; }
+    .login-btn     { padding: 11px; font-size: 15px; min-height: 44px; }
+    .login-notice  { padding: 9px 12px; margin-top: 14px; }
+    .login-notice div { font-size: 12px; line-height: 1.5; }
+}
+
+/* Very short viewports (landscape phones, short portrait screens) —
+   drop the logo further so the name field stays above the keyboard */
+@media (max-height: 640px) {
+    .login-card { padding: 18px 22px 18px; }
+    .login-logo { height: 44px; margin-bottom: 12px; }
+    .rules-block--login { margin-bottom: 14px; }
 }
 
 
