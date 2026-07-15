@@ -451,3 +451,172 @@ body.modal-open {
     -webkit-transform: translateX(-50%) translateY(0);
     transform: translateX(-50%) translateY(0);
 }
+
+
+/* =========================================================================
+   PRIZE REDEMPTION VOUCHER
+   Formal-looking ticket presented after a prize is redeemed.  Users show
+   this to the VIVACE booth as proof; a "REDEEMED" stamp confirms status.
+   ========================================================================= */
+.voucher-content {
+    max-width: 400px;
+    padding: 26px 22px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Diagonal "REDEEMED" stamp in the top-right corner */
+.voucher-stamp {
+    position: absolute;
+    top: 22px;
+    right: -46px;
+    transform: rotate(28deg);
+    background: var(--red);
+    color: white;
+    font-family: 'Space Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: .18em;
+    padding: 4px 56px;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+    box-shadow: 0 2px 0 rgba(0,0,0,.15);
+    z-index: 2;
+}
+
+.voucher-brand-logo {
+    height: 48px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.voucher-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 22px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: .03em;
+}
+
+.voucher-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .18em;
+    color: #666;
+    margin-bottom: 14px;
+    text-transform: uppercase;
+}
+
+/* Dashed rule mimics a perforated ticket edge */
+.voucher-divider {
+    border: none;
+    border-top: 2px dashed var(--ink);
+    opacity: .35;
+    margin: 12px 0;
+    height: 0;
+}
+
+.voucher-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    font-family: 'Fredoka', sans-serif;
+    padding: 4px 2px;
+}
+
+.voucher-row-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: #666;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.voucher-row-value {
+    font-size: 14px;
+    color: var(--ink);
+    font-weight: 700;
+    text-align: right;
+    word-break: break-word;
+}
+
+/* Prize block — image + label side-by-side */
+.voucher-prize {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+    border-radius: 14px;
+    padding: 12px;
+    margin: 8px 0 12px;
+    text-align: left;
+}
+
+.voucher-prize-image {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    background: white;
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    flex-shrink: 0;
+    padding: 6px;
+}
+
+.voucher-prize-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.voucher-prize-label {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: .02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+}
+
+.voucher-prize-note {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11px;
+    color: #666;
+    line-height: 1.4;
+}
+
+/* Notice with the "please show this + screenshot" message */
+.voucher-notice {
+    background: #fff8e7;
+    border: 1.5px dashed #d97706;
+    color: #78350f;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 12.5px;
+    line-height: 1.5;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.voucher-notice strong {
+    color: #78350f;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.voucher-ref {
+    font-family: 'Space Mono', monospace;
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    color: #999;
+    margin: 6px 0 12px;
+    text-align: center;
+    user-select: all;
+}

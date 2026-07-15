@@ -1,6 +1,8 @@
 /* =========================================================================
    install.js — "Install as an App" feature.
-   Shows a modal with iOS Safari Add-to-Home-Screen instructions.
+   iOS: shows an Add-to-Home-Screen instructions modal (Safari has no native prompt).
+   Android: uses the native beforeinstallprompt when available, falls back to
+            step-by-step instructions in the same modal.
    Wired to any element carrying [data-install-trigger].
    Depends on window.Vivace.UI (ui.js) for lockScroll / trapTab.
    ========================================================================= */
@@ -18,6 +20,7 @@
     var isIOSDevice     = /iPhone|iPad|iPod/.test(ua);
     var isIPadOS13Plus  = navigator.platform === 'MacIntel' && (navigator.maxTouchPoints || 0) > 1;
     var isIOS           = isIOSDevice || isIPadOS13Plus;
+    var isAndroid       = /Android/.test(ua);
 
     // Already installed to home screen?  Hide install buttons entirely.
     var isStandalone =
@@ -32,13 +35,39 @@
     // ---- Grab modal + triggers ---------------------------------------
     var modal       = document.getElementById('installModal');
     var closeBtn    = document.getElementById('installCloseBtn');
-    var androidNote = document.getElementById('installNoteAndroid');
+    var stepsIOS    = document.getElementById('installStepsIOS');
+    var stepsAndroid= document.getElementById('installStepsAndroid');
+    var subtitle    = document.getElementById('installSubtitle');
     if (!modal || !closeBtn) return;
 
-    // Show the "Android coming soon" note on non-iOS visitors
-    if (!isIOS && androidNote) androidNote.style.display = 'flex';
+    // Pick the correct instruction list for this platform
+    if (isAndroid) {
+        if (stepsIOS)     stepsIOS.style.display     = 'none';
+        if (stepsAndroid) stepsAndroid.style.display = '';
+        if (subtitle)     subtitle.textContent       = 'Install Vivace as an app on your Android phone so you can open your stamp card in one tap.';
+    } else {
+        // iOS is the default view; still ensure Android list is hidden.
+        if (stepsAndroid) stepsAndroid.style.display = 'none';
+        if (stepsIOS)     stepsIOS.style.display     = '';
+        if (subtitle && isIOS) subtitle.textContent  = 'Install Vivace as an app on your iPhone so you can open your stamp card in one tap.';
+    }
 
-    // ---- Open / close --------------------------------------------------
+    // ---- Native Android install prompt (Chrome / Edge / Samsung) -----
+    // Chromium browsers fire beforeinstallprompt when the site is installable.
+    // We stash the event and use it when the user clicks any install trigger.
+    var deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+    });
+
+    // Once installed, hide install buttons
+    window.addEventListener('appinstalled', function () {
+        deferredPrompt = null;
+        document.body.classList.add('pwa-installed');
+    });
+
+    // ---- Open / close modal ------------------------------------------
     var focusReturn = null;
 
     function open(trigger) {
@@ -55,9 +84,24 @@
         focusReturn = null;
     }
 
+    // ---- Handle a click on any install trigger -----------------------
+    function handleInstallClick(btn) {
+        // Android + native prompt available → fire it directly, skip the modal.
+        if (deferredPrompt && deferredPrompt.prompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(function () {
+                // Whether accepted or dismissed, the event can only be used once.
+                deferredPrompt = null;
+            });
+            return;
+        }
+        // Otherwise show the instructions modal (iOS, or Android without prompt).
+        open(btn);
+    }
+
     // ---- Wire every [data-install-trigger] button --------------------
     document.querySelectorAll('[data-install-trigger]').forEach(function (btn) {
-        btn.addEventListener('click', function () { open(btn); });
+        btn.addEventListener('click', function () { handleInstallClick(btn); });
     });
 
     closeBtn.addEventListener('click', close);
@@ -69,13 +113,18 @@
         UI.trapTab(modal, e);
     });
 
-    // ---- First-time gentle nudge for iOS Safari visitors -------------
+    // ---- First-time gentle nudge for iOS + Android visitors ----------
     // Waits until user is past the login screen so it doesn't stack over it.
-    if (isIOS && !localStorage.getItem(AUTO_SHOWN_KEY)) {
+    if ((isIOS || isAndroid) && !localStorage.getItem(AUTO_SHOWN_KEY)) {
         setTimeout(function () {
             var overlay = document.getElementById('loginOverlay');
             if (overlay && overlay.style.display === 'none') {
-                open(null);
+                // On Android with a native prompt ready, fire it directly.
+                if (deferredPrompt && deferredPrompt.prompt) {
+                    handleInstallClick(null);
+                } else {
+                    open(null);
+                }
                 localStorage.setItem(AUTO_SHOWN_KEY, '1');
             }
         }, 5000);

@@ -104,6 +104,74 @@
         if (e.target === $confirm) closeConfirm();
     });
 
+    // ---- REDEMPTION VOUCHER --------------------------------------------
+    // Reads prize label + image from the tile's own DOM so no server-side
+    // data has to be duplicated into JS.  Called from handlePrizeClick().
+    var $redeem       = document.getElementById('redeemModal');
+    var $redeemClose  = document.getElementById('redeemCloseBtn');
+
+    function pad2(n) { return n < 10 ? '0' + n : String(n); }
+
+    function formatIssued(d) {
+        // e.g. "15 Jul 2026 · 20:14"
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() +
+               ' · ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    }
+
+    function makeVoucherRef(prizeId, name) {
+        // Short deterministic-ish reference so the printed voucher looks official.
+        var base = (name || 'GUEST').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'VVCE';
+        var rand = Math.floor(Math.random() * 9000 + 1000);
+        return 'VVC-P' + prizeId + '-' + base + '-' + rand;
+    }
+
+    function showRedemption(prizeId) {
+        if ($redeem == null) return;
+        var tile = document.querySelector('.prize-tile[data-prize="' + prizeId + '"]');
+        if (!tile) return;
+
+        var img       = tile.querySelector('.prize-image img');
+        var labelEl   = tile.querySelector('.prize-label');
+        var prizeLbl  = labelEl ? labelEl.textContent : ('Prize ' + prizeId);
+        var prizeSrc  = img ? img.getAttribute('src') : '';
+
+        document.getElementById('voucherName').textContent   = State.currentUsername || '—';
+        document.getElementById('voucherStamps').textContent = State.visitedBooths.length + ' / ' + TOTAL_BOOTHS;
+        document.getElementById('voucherIssued').textContent = formatIssued(new Date());
+        document.getElementById('voucherPrizeLabel').textContent = prizeLbl;
+        document.getElementById('voucherRef').textContent    = makeVoucherRef(prizeId, State.currentUsername);
+
+        var $voucherImg = document.getElementById('voucherPrizeImage');
+        if (prizeSrc) {
+            $voucherImg.src = prizeSrc;
+            $voucherImg.alt = prizeLbl;
+            $voucherImg.style.display = 'block';
+        } else {
+            $voucherImg.style.display = 'none';
+        }
+
+        $redeem.style.display = 'flex';
+        lockScroll();
+        setTimeout(function () { $redeemClose.focus(); }, 60);
+    }
+
+    function closeRedemption() {
+        $redeem.style.display = 'none';
+        unlockScroll();
+    }
+
+    if ($redeemClose) $redeemClose.addEventListener('click', closeRedemption);
+    if ($redeem) {
+        $redeem.addEventListener('click', function (e) {
+            if (e.target === $redeem) closeRedemption();
+        });
+        $redeem.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { closeRedemption(); return; }
+            trapTab($redeem, e);
+        });
+    }
+
     // ---- LOGIN OVERLAY -------------------------------------------------
     function showLogin() {
         $overlay.style.display = 'flex';
@@ -152,10 +220,13 @@
             }
         });
 
-        // --- Progress bar ---
+        // --- Progress roadmap ---
         var n = visited.length;
         $fill.style.width = (n / TOTAL_BOOTHS * 100) + '%';
         $count.textContent = n;
+        document.querySelectorAll('.roadmap-dot').forEach(function (dot) {
+            dot.classList.toggle('visited', visited.indexOf(dot.dataset.id) !== -1);
+        });
         if ($bar) {
             $bar.setAttribute('aria-valuenow',  n);
             $bar.setAttribute('aria-valuetext', n + ' of ' + TOTAL_BOOTHS + ' booths visited');
@@ -273,6 +344,8 @@
         render:       render,
         showCongrats: showCongrats,
         closeCongrats: closeCongrats,
+        showRedemption: showRedemption,
+        closeRedemption: closeRedemption,
         // Element refs other modules occasionally need
         el: {
             overlay:      $overlay,

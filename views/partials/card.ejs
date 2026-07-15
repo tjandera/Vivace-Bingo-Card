@@ -32,20 +32,6 @@
             </div>
         </div>
 
-        <!-- Progress bar (fills up as booths are visited) -->
-        <div class="progress-area">
-            <div class="progress-text">Booths visited: <span id="progressCount">0</span> / <%= totalBooths %></div>
-            <div class="progress-bar-bg"
-                 role="progressbar"
-                 aria-valuemin="0"
-                 aria-valuemax="<%= totalBooths %>"
-                 aria-valuenow="0"
-                 aria-label="Booths visited"
-                 id="progressBar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-        </div>
-
         <!-- Booth grid — one card per booth in models/booths.js (renders 3 columns × 4 rows) -->
         <div class="checkpoint-grid">
             <% booths.forEach(function(booth, i) { %>
@@ -57,19 +43,42 @@
                  <% if (booth.mandatory) { %>data-mandatory="true"<% } %>
                  onclick="handleBoothClick(this)">
                 <% if (booth.mandatory) { %><div class="mandatory-badge">START HERE</div><% } %>
-                <img class="checkpoint-icon"
-                     src="<%= booth.logo %>"
-                     alt="<%= booth.name %>"
-                     style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
-                <div class="checkpoint-name"><%= booth.name %></div>
-                <div class="lock-overlay" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="4" y="11" width="16" height="10" rx="2"/>
-                        <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-                    </svg>
+                <div class="stamp-circle">
+                    <img class="checkpoint-icon"
+                         src="<%= booth.logo %>"
+                         alt="<%= booth.name %>"
+                         style="animation-delay:<%= (i * 0.38).toFixed(2) %>s">
+                    <div class="lock-overlay" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="11" width="16" height="10" rx="2"/>
+                            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                        </svg>
+                    </div>
                 </div>
+                <div class="checkpoint-name"><%= booth.name %></div>
             </div>
             <% }); %>
+        </div>
+
+        <!-- Roadmap — horizontal track with a milestone dot per booth.
+             Dots fill in as the user gets stamps. Sits below the grid. -->
+        <div class="roadmap-area"
+             role="progressbar"
+             aria-valuemin="0"
+             aria-valuemax="<%= totalBooths %>"
+             aria-valuenow="0"
+             aria-label="Booths visited"
+             id="progressBar">
+            <div class="roadmap-text">Booths visited: <span id="progressCount">0</span> / <%= totalBooths %></div>
+            <div class="roadmap-track">
+                <div class="roadmap-line-bg"></div>
+                <div class="roadmap-line-fill" id="progressFill"></div>
+                <div class="roadmap-dots">
+                    <% booths.forEach(function(booth, i) { %>
+                    <div class="roadmap-dot" data-idx="<%= i %>" data-id="<%= booth.id %>"></div>
+                    <% }); %>
+                </div>
+            </div>
         </div>
 
         <!-- Prizes — unlocked as stamp count crosses each threshold.

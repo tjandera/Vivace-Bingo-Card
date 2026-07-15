@@ -108,8 +108,10 @@
     // PRIZE CLICK — called from onclick="handlePrizeClick(1)" etc.
     // =====================================================================
     window.handlePrizeClick = function (prizeId) {
+        // Already redeemed → re-open the voucher so the user can re-screenshot.
         if (State.redeemedPrizes.indexOf(prizeId) !== -1) {
-            UI.toast('Already redeemed!'); return;
+            UI.showRedemption(prizeId);
+            return;
         }
         var needed = PRIZE_CONFIG[prizeId];
         if (State.visitedBooths.length < needed) {
@@ -124,8 +126,8 @@
                 State.redeemedPrizes.push(prizeId);
                 State.save();
                 UI.render();
-                UI.toast('Prize redeemed! Head to the prize counter.');
-                UI.announce('Prize ' + prizeId + ' successfully redeemed!');
+                UI.showRedemption(prizeId);
+                UI.announce('Prize ' + prizeId + ' successfully redeemed. Please present this voucher at the VIVACE prize counter.');
             });
     };
 

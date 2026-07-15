@@ -32,6 +32,54 @@
     </div>
 </div>
 
+<!-- REDEMPTION VOUCHER MODAL — shown after a prize is redeemed, or when
+     the user taps an already-redeemed prize.  Serves as proof to be shown
+     at the VIVACE prize counter.  Fields populated by UI.showRedemption(). -->
+<div id="redeemModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="redeemTitle">
+    <div class="modal-content voucher-content">
+        <div class="voucher-stamp" aria-hidden="true">REDEEMED</div>
+        <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="voucher-brand-logo">
+        <h3 id="redeemTitle" class="voucher-title">Prize Redemption Voucher</h3>
+        <p class="voucher-subtitle">VIVACE 2026 · Open House</p>
+
+        <div class="voucher-divider" aria-hidden="true"></div>
+
+        <div class="voucher-row">
+            <span class="voucher-row-label">Name</span>
+            <span class="voucher-row-value" id="voucherName">—</span>
+        </div>
+        <div class="voucher-row">
+            <span class="voucher-row-label">Stamps Collected</span>
+            <span class="voucher-row-value" id="voucherStamps">—</span>
+        </div>
+        <div class="voucher-row">
+            <span class="voucher-row-label">Issued</span>
+            <span class="voucher-row-value" id="voucherIssued">—</span>
+        </div>
+
+        <div class="voucher-divider" aria-hidden="true"></div>
+
+        <div class="voucher-prize">
+            <img src="" alt="" class="voucher-prize-image" id="voucherPrizeImage">
+            <div class="voucher-prize-meta">
+                <div class="voucher-prize-label" id="voucherPrizeLabel">—</div>
+                <div class="voucher-prize-note">Awarded upon completion of the required checkpoints</div>
+            </div>
+        </div>
+
+        <div class="voucher-notice">
+            <strong>Please present this voucher at the VIVACE prize counter to claim your reward.</strong>
+            We kindly recommend taking a screenshot of this page. Your progress is saved on this device, but a screenshot ensures a smooth handover should any connectivity issues arise.
+        </div>
+
+        <div class="voucher-ref">Ref: <span id="voucherRef">—</span></div>
+
+        <div class="modal-buttons">
+            <button class="btn-verify" id="redeemCloseBtn">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- CONFIRM MODAL — generic yes/no prompt, driven by showConfirm() in ui.js -->
 <div id="confirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmText">
     <div class="modal-content">
@@ -102,9 +150,10 @@
     <div class="modal-content install-modal-content">
         <img src="/images/vivace-logo.png" alt="Vivace" class="install-logo">
         <h3 id="installTitle" class="install-title">Add to Home Screen</h3>
-        <p class="install-subtitle">Install Vivace as an app on your iPhone so you can open your stamp card in one tap.</p>
+        <p class="install-subtitle" id="installSubtitle">Install Vivace as an app on your phone so you can open your stamp card in one tap.</p>
 
-        <ol class="install-steps">
+        <!-- iOS Safari steps — install.js shows this to iOS visitors -->
+        <ol class="install-steps" id="installStepsIOS">
             <li class="install-step">
                 <span class="install-step-num">1</span>
                 <div class="install-step-body">
@@ -146,16 +195,50 @@
             </li>
         </ol>
 
-        <!-- Shown only on non-iOS devices (install.js toggles this) -->
-        <div class="install-note" id="installNoteAndroid" style="display:none;">
-            <span class="notice-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="6" y="2" width="12" height="20" rx="2.5"/>
-                    <line x1="11" y1="18" x2="13" y2="18"/>
-                </svg>
-            </span>
-            <div>Android support is coming soon. For now, the card works great in your mobile browser.</div>
-        </div>
+        <!-- Android steps — install.js shows this to Android visitors (fallback when
+             beforeinstallprompt isn't available e.g. Firefox, Samsung, or already dismissed) -->
+        <ol class="install-steps" id="installStepsAndroid" style="display:none;">
+            <li class="install-step">
+                <span class="install-step-num">1</span>
+                <div class="install-step-body">
+                    <div>Open this page in <strong>Chrome</strong> (or Edge / Samsung Internet).</div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">2</span>
+                <div class="install-step-body">
+                    <div>Tap the
+                        <span class="ios-share-chip">
+                            <svg class="ios-share-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="5" r="1.6"/>
+                                <circle cx="12" cy="12" r="1.6"/>
+                                <circle cx="12" cy="19" r="1.6"/>
+                            </svg>
+                            Menu
+                        </span>
+                        button in the top-right of the browser.
+                    </div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">3</span>
+                <div class="install-step-body">
+                    <div>Tap
+                        <span class="ios-share-chip ios-share-chip--add">
+                            <span class="ios-share-plus">+</span>
+                            Install app
+                        </span>
+                        or <strong>Add to Home screen</strong>.
+                    </div>
+                </div>
+            </li>
+            <li class="install-step">
+                <span class="install-step-num">4</span>
+                <div class="install-step-body">
+                    <div>Tap <strong>Install</strong> — Vivace will appear on your home screen like a real app!</div>
+                </div>
+            </li>
+        </ol>
 
         <div class="modal-buttons">
             <button class="btn-verify install-close-btn" id="installCloseBtn">Got it!</button>

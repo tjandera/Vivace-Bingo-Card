@@ -119,104 +119,89 @@
 .switch-btn:active { transform: translate(1px,1px);   box-shadow: 1px 1px 0 var(--ink); }
 
 
-/* ===== PROGRESS BAR ===== */
-.progress-area {
-    padding: 14px 20px 10px;
-}
-
-.progress-text {
-    font-family: 'Fredoka', sans-serif;
-    font-weight: 600;
-    font-size: 15px;
-    color: var(--ink);
-    margin-bottom: 8px;
-}
-
-.progress-bar-bg {
-    background: var(--cream);
-    border: 2px solid var(--ink);
-    box-shadow: 2px 2px 0 var(--ink);
-    border-radius: 20px;
-    height: 14px;
-    overflow: hidden;
-}
-
-.progress-fill {
-    background: linear-gradient(90deg, var(--red), var(--orange));
-    width: 0%;
-    height: 100%;
-    border-radius: 20px;
-    /* Spring transition — value driven by JS updateUI() */
-    transition: width .45s cubic-bezier(.34,1.56,.64,1);
-}
-
-
 /* ===== BOOTH GRID =====
    Always 3 columns.  With 12 booths this renders as 3 × 4.  If you add
    more booths in models/booths.js it stays 3 columns and just adds rows. */
 .checkpoint-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     grid-auto-rows: 1fr;
     gap: 12px;
     padding: 16px 18px;
 }
 
+/* Grid cell wraps a round .stamp-circle plus the booth name below. The card
+   itself is transparent — the visible "stamp" is .stamp-circle. */
 .checkpoint-card {
-    background: var(--cream-2);
-    border-radius: 20px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 4px 2px 2px;
     text-align: center;
-    padding: 14px 6px 12px;
-    border: 2.5px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--ink);
     cursor: pointer;
-    /* Touch-friendly: avoids 300ms tap delay on older mobile browsers */
     touch-action: manipulation;
-    /* Apple HIG / WCAG 2.5.5 minimum touch target */
     min-height: 88px;
-    transition: transform .12s ease, box-shadow .12s ease;
     position: relative;
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0;
 }
 
-/* Coloured accent bar at top of each booth card (colour comes from --accent inline style) */
-.checkpoint-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 7px;
-    background: var(--accent, var(--yellow));
+/* The circular stamp — colour ring uses --accent, ink outline via first shadow */
+.stamp-circle {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: var(--cream-2);
+    border: 3px solid var(--accent, var(--ink));
+    box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: transform .12s ease, box-shadow .12s ease;
 }
 
-.checkpoint-card:hover:not(.visited) {
+.checkpoint-card:hover:not(.visited) .stamp-circle {
     transform: translate(-2px,-2px);
-    box-shadow: 5px 5px 0 var(--ink);
+    box-shadow: 0 0 0 2px var(--ink), 5px 5px 0 var(--ink);
 }
-.checkpoint-card:active:not(.visited) {
+.checkpoint-card:active:not(.visited) .stamp-circle {
     transform: translate(1px,1px);
+    box-shadow: 0 0 0 2px var(--ink), 1px 1px 0 var(--ink);
+}
+
+/* Visited state — grey ring + green check badge peeking out top-right */
+.checkpoint-card.visited { cursor: default; }
+.checkpoint-card.visited .stamp-circle {
+    background: #e8ecf0;
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 2px #94a3b8, 2px 2px 0 #94a3b8;
+}
+.checkpoint-card.visited .checkpoint-icon { filter: grayscale(.5); opacity: .7; }
+.checkpoint-card.visited .stamp-circle::after {
+    content: '✓';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green);
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--ink);
     box-shadow: 1px 1px 0 var(--ink);
 }
 
-/* Visited state — desaturated + green tick */
-.checkpoint-card.visited {
-    background: #e8ecf0;
-    border-color: #94a3b8;
-    box-shadow: 2px 2px 0 #94a3b8;
-    cursor: default;
-    opacity: .65;
-}
-.checkpoint-card.visited::before { background: #94a3b8; }
-.checkpoint-card.visited::after {
-    content: '✓';
-    position: absolute;
-    top: 8px; right: 10px;
-    font-size: 16px;
-    color: var(--green);
-    font-weight: 800;
-}
-
-/* Locked state — before mandatory START HERE booth is stamped */
+/* Locked state — greyed out with lock icon covering the stamp */
 .checkpoint-card .lock-overlay {
     display: none;
     position: absolute;
@@ -226,40 +211,37 @@
     align-items: center;
     justify-content: center;
     pointer-events: none;
-    border-radius: 18px;
+    border-radius: 50%;
+    overflow: hidden;
 }
 .checkpoint-card .lock-overlay svg {
-    width: 45px;
-    height: 45px;
+    width: 32px;
+    height: 32px;
 }
-.checkpoint-card.locked {
-    cursor: not-allowed;
-    filter: grayscale(.6);
-}
+.checkpoint-card.locked { cursor: not-allowed; }
+.checkpoint-card.locked .stamp-circle { filter: grayscale(.6); }
 .checkpoint-card.locked .lock-overlay { display: flex; }
-.checkpoint-card.locked:hover { transform: none; box-shadow: 3px 3px 0 var(--ink); }
+.checkpoint-card.locked:hover .stamp-circle {
+    transform: none;
+    box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 var(--ink);
+}
 
-/* Mandatory "START HERE" booth — pulses red to draw the eye */
-.checkpoint-card.mandatory {
+/* Mandatory "START HERE" booth — red ring pulses to draw the eye */
+.checkpoint-card.mandatory .stamp-circle {
     border-color: var(--red);
-    box-shadow: 3px 3px 0 var(--red);
+    box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 var(--red);
     animation: mandatory-pulse 1.8s ease-in-out infinite;
-    overflow: visible;
 }
-.checkpoint-card.mandatory::before {
-    border-top-left-radius: 17px;
-    border-top-right-radius: 17px;
-}
-.checkpoint-card.mandatory.visited {
+.checkpoint-card.mandatory.visited .stamp-circle {
     animation: none;
     border-color: #94a3b8;
-    box-shadow: 2px 2px 0 #94a3b8;
+    box-shadow: 0 0 0 2px #94a3b8, 2px 2px 0 #94a3b8;
 }
 .checkpoint-card.mandatory.visited .mandatory-badge { display: none; }
 
 .mandatory-badge {
     position: absolute;
-    top: -10px;
+    top: -8px;
     left: 50%;
     transform: translateX(-50%);
     background: var(--red);
@@ -277,17 +259,15 @@
 }
 
 @keyframes mandatory-pulse {
-    0%, 100% { box-shadow: 3px 3px 0 var(--red); }
-    50%      { box-shadow: 5px 5px 0 var(--red); transform: translateY(-1px); }
+    0%, 100% { box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 var(--red); }
+    50%      { box-shadow: 0 0 0 2px var(--ink), 5px 5px 0 var(--red); transform: translateY(-1px); }
 }
 
 .checkpoint-icon {
-    width: 54px;
-    height: 54px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
     display: block;
-    margin: 4px auto 8px;
-    /* Gentle bob — staggered per booth via animation-delay inline style */
     animation: bob 3.4s ease-in-out infinite;
 }
 
@@ -297,11 +277,89 @@
     font-size: 11px;
     line-height: 1.3;
     color: var(--ink);
+    margin-top: 8px;
 }
 
 @keyframes bob {
     0%, 100% { transform: translateY(0px); }
     50%      { transform: translateY(-4px); }
+}
+
+
+/* ===== ROADMAP =====
+   Straight horizontal track with a milestone dot per booth. Dots fill in
+   as booths are visited. #progressFill width is driven by ui.js render(). */
+.roadmap-area {
+    padding: 6px 22px 20px;
+}
+
+.roadmap-text {
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.roadmap-track {
+    position: relative;
+    width: 100%;
+    height: 22px;
+    display: flex;
+    align-items: center;
+}
+
+.roadmap-line-bg {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 6px;
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 20px;
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
+.roadmap-line-fill {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 6px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--red), var(--orange));
+    border-radius: 20px;
+    /* Spring transition — value driven by JS updateUI() */
+    transition: width .45s cubic-bezier(.34,1.56,.64,1);
+    /* Keep the fill inside the outlined bar */
+    max-width: calc(100% - 4px);
+    margin-left: 2px;
+}
+
+.roadmap-dots {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    z-index: 1;
+}
+
+.roadmap-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--cream-2);
+    border: 2px solid var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    transition: background .25s ease, transform .25s ease;
+}
+
+.roadmap-dot.visited {
+    background: var(--green);
+    transform: scale(1.15);
 }
 
 
@@ -495,9 +553,10 @@
 /* ===== RESPONSIVE — very small phones ( < 360px ) ===== */
 @media (max-width: 359px) {
     .checkpoint-grid       { gap: 8px; padding: 12px 12px; }
-    .checkpoint-card       { padding: 10px 4px 8px; }
-    .checkpoint-icon       { width: 42px; height: 42px; }
-    .checkpoint-name       { font-size: 10px; }
+    .checkpoint-card       { padding: 2px; }
+    .stamp-circle          { width: 62px; height: 62px; }
+    .checkpoint-icon       { width: 38px; height: 38px; }
+    .checkpoint-name       { font-size: 10px; margin-top: 6px; }
     .card-wrapper          { padding: 16px 10px 0; }
 }
 
