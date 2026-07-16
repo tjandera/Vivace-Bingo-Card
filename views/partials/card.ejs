@@ -32,7 +32,8 @@
             </div>
         </div>
 
-        <!-- Booth grid — one card per booth in models/booths.js (renders 3 columns × 4 rows) -->
+        <!-- Booth grid — Vivace's Gamebooth is fixed at slot 1; the other 11 slots
+             are filled at runtime by app.js from a random 11 of the CCA catalog. -->
         <div class="checkpoint-grid">
             <% booths.forEach(function(booth, i) { %>
             <div class="checkpoint-card<%= booth.mandatory ? ' mandatory' : '' %>"
@@ -58,6 +59,21 @@
                 <div class="checkpoint-name"><%= booth.name %></div>
             </div>
             <% }); %>
+
+            <% for (var s = 0; s < ccaSlots; s++) { %>
+            <div class="checkpoint-card checkpoint-slot" data-slot="<%= s %>" onclick="handleBoothClick(this)">
+                <div class="stamp-circle">
+                    <img class="checkpoint-icon" src="" alt="" style="animation-delay:<%= ((booths.length + s) * 0.38).toFixed(2) %>s">
+                    <div class="lock-overlay" aria-hidden="true">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="11" width="16" height="10" rx="2"/>
+                            <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="checkpoint-name"></div>
+            </div>
+            <% } %>
         </div>
 
         <!-- Roadmap — horizontal track with a milestone dot per booth.
@@ -77,6 +93,9 @@
                     <% booths.forEach(function(booth, i) { %>
                     <div class="roadmap-dot" data-idx="<%= i %>" data-id="<%= booth.id %>"></div>
                     <% }); %>
+                    <% for (var s = 0; s < ccaSlots; s++) { %>
+                    <div class="roadmap-dot" data-idx="<%= booths.length + s %>" data-slot="<%= s %>"></div>
+                    <% } %>
                 </div>
             </div>
         </div>

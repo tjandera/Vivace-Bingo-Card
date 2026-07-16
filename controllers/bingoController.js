@@ -1,22 +1,40 @@
 /* controllers/bingoController.js
-   Business logic for the stamp card page.  Reads the booth + prize models,
-   pre-computes helpful lookups, and renders views/index.ejs. */
+   Business logic for the stamp card page.  Pre-computes boot data and
+   renders views/index.ejs. */
 
-const { booths } = require("../models/booths");
-const { prizes } = require("../models/prizes");
+const { booths }  = require("../models/booths");
+const { prizes }  = require("../models/prizes");
+const { catalog } = require("../models/cca-catalog");
 
 // GET /  →  render the full stamp card
 exports.getStampCard = (req, res) => {
-    // { b0: hash, b1: hash, ... } — passed to the browser as safe hashes
+    // Boot codes for the fixed mandatory booth (Vivace's Gamebooth = b0).
+    // Codes for the 86 CCAs live in ccaCatalog and are looked up per user
+    // after the client picks its random 11.
     const boothCodes = {};
     booths.forEach(b => { boothCodes[b.id] = b.codeHash; });
 
-    // { "1": 3, "2": 6, "3": 9 } — prize id → stamps needed
+    // Client-facing CCA catalog — every CCA's id, name, logo, accent, hash.
+    // The client picks 11 random IDs on first visit and stores them in
+    // localStorage.  The other 75 CCAs are never rendered into the DOM,
+    // so their logo files are never requested from the network.
+    const ccaCatalog = catalog.map(c => ({
+        id:       c.id,
+        name:     c.name,
+        logo:     c.logo,
+        accent:   c.accent,
+        codeHash: c.codeHash,
+    }));
+
     const prizeConfig = {};
     prizes.forEach(p => { prizeConfig[p.id] = p.stampsRequired; });
 
-    // Which booth must be visited first (fallback to first booth if none flagged)
     const mandatoryBooth = booths.find(b => b.mandatory) || booths[0];
+
+    // Grid is 3×4 = 12 slots.  Vivace occupies slot 1; the other 11 come
+    // from the CCA catalog.  Prize thresholds (4/8/12) key off totalBooths.
+    const CCA_SLOTS   = 11;
+    const totalBooths = booths.length + CCA_SLOTS;
 
     res.render("index", {
         pageTitle:          "VIVACE 2026 — Stamp Card",
@@ -26,7 +44,9 @@ exports.getStampCard = (req, res) => {
         subhead:            "★ SMU CCA FAIR 2026 ★",
         booths,
         prizes,
-        totalBooths:        booths.length,
+        totalBooths,
+        ccaSlots:           CCA_SLOTS,
+        ccaCatalog,
         boothCodes,
         prizeConfig,
         mandatoryBoothId:   mandatoryBooth.id,

@@ -177,9 +177,78 @@
     });
 
     // =====================================================================
+    // CCA SELECTION — pick 11 random CCAs on first visit, persist per device.
+    // Populates the empty .checkpoint-slot cards and .roadmap-dot stubs
+    // rendered by the EJS template, and adds each CCA's codeHash to
+    // BOOTH_CODES so the code-entry modal can verify against them.
+    //
+    // Kept per-device (not per-user) so switching users on the same phone
+    // keeps a stable booth set — the user isn't randomly reshuffled.
+    // =====================================================================
+    var CCA_SELECTION_KEY = 'vivace_cca_selection';
+
+    function pickCcaIds() {
+        var ids = CCA_CATALOG.map(function (c) { return c.id; });
+        // Fisher–Yates
+        for (var i = ids.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = ids[i]; ids[i] = ids[j]; ids[j] = tmp;
+        }
+        return ids.slice(0, CCA_SLOTS);
+    }
+
+    function loadOrPickSelection() {
+        var picked = null;
+        try { picked = JSON.parse(localStorage.getItem(CCA_SELECTION_KEY) || 'null'); } catch (e) {}
+        // Guard against corrupted storage or a stale selection referencing
+        // CCAs that are no longer in the catalog (e.g., after event pruning).
+        var byId = {};
+        CCA_CATALOG.forEach(function (c) { byId[c.id] = true; });
+        var valid = Array.isArray(picked) && picked.length === CCA_SLOTS &&
+                    picked.every(function (id) { return byId[id]; });
+        if (!valid) {
+            picked = pickCcaIds();
+            try { localStorage.setItem(CCA_SELECTION_KEY, JSON.stringify(picked)); } catch (e) {}
+        }
+        return picked;
+    }
+
+    function initCcaSlots() {
+        var picked = loadOrPickSelection();
+        var byId   = {};
+        CCA_CATALOG.forEach(function (c) { byId[c.id] = c; });
+
+        picked.forEach(function (ccaId, slotIdx) {
+            var cca = byId[ccaId];
+            if (!cca) return;
+
+            // Extend BOOTH_CODES so verifyCode() can look this hash up.
+            BOOTH_CODES[cca.id] = cca.codeHash;
+
+            // Fill the grid stamp card
+            var card = document.querySelector('.checkpoint-slot[data-slot="' + slotIdx + '"]');
+            if (card) {
+                card.dataset.id   = cca.id;
+                card.dataset.name = cca.name;
+                card.dataset.logo = cca.logo;
+                card.style.setProperty('--accent', cca.accent);
+                var img  = card.querySelector('.checkpoint-icon');
+                var name = card.querySelector('.checkpoint-name');
+                if (img)  { img.src = cca.logo; img.alt = cca.name; }
+                if (name) { name.textContent = cca.name; }
+            }
+
+            // Fill the roadmap dot
+            var dot = document.querySelector('.roadmap-dot[data-slot="' + slotIdx + '"]');
+            if (dot) dot.dataset.id = cca.id;
+        });
+    }
+
+    // =====================================================================
     // BOOT — either show login or restore the saved user
     // =====================================================================
     (function boot() {
+        initCcaSlots();
         initKeyboard();
 
         var saved = State.readUsername();
