@@ -177,6 +177,52 @@
     });
 
     // =====================================================================
+    // LOGO REFINEMENT — runs once per img after it loads.
+    //   · Near-square logos get rounded (border-radius: 50% via .is-square)
+    //     so they look like proper stamps.  Non-square logos are left
+    //     rectangular so nothing is awkwardly clipped.
+    //   · Logos that are mostly white/very light (which would vanish on a
+    //     white stamp background) flip the enclosing .stamp-circle to a
+    //     dark background via .is-light.
+    // Same-origin canvas access is used to sample brightness; if it ever
+    // throws (e.g. tainted canvas) we silently skip that logo.
+    // =====================================================================
+    function refineIcon(img) {
+        function apply() {
+            if (!img.naturalWidth || !img.naturalHeight) return;
+
+            // 1. Aspect: mark square-ish logos so CSS can round them.
+            var ratio = img.naturalWidth / img.naturalHeight;
+            if (ratio > 0.9 && ratio < 1.1) img.classList.add('is-square');
+
+            // 2. Brightness: sample a downscaled copy, average opaque pixels.
+            try {
+                var w = Math.min(img.naturalWidth,  40);
+                var h = Math.min(img.naturalHeight, 40);
+                var cvs = document.createElement('canvas');
+                cvs.width = w; cvs.height = h;
+                var ctx = cvs.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                var px = ctx.getImageData(0, 0, w, h).data;
+                var sum = 0, count = 0;
+                for (var i = 0; i < px.length; i += 4) {
+                    if (px[i + 3] > 128) {
+                        sum += (px[i] + px[i + 1] + px[i + 2]) / 3;
+                        count++;
+                    }
+                }
+                if (count > 0 && (sum / count) > 220) {
+                    var circle = img.closest && img.closest('.stamp-circle');
+                    if (circle) circle.classList.add('is-light');
+                }
+            } catch (e) { /* CORS-tainted / other — skip brightness detection */ }
+        }
+
+        if (img.complete && img.naturalWidth > 0) apply();
+        else img.addEventListener('load', apply);
+    }
+
+    // =====================================================================
     // CCA SELECTION — pick 11 random CCAs on first visit, persist per device.
     // Populates the empty .checkpoint-slot cards and .roadmap-dot stubs
     // rendered by the EJS template, and adds each CCA's codeHash to
@@ -242,6 +288,10 @@
             var dot = document.querySelector('.roadmap-dot[data-slot="' + slotIdx + '"]');
             if (dot) dot.dataset.id = cca.id;
         });
+
+        // Refine every logo — square rounding + light-logo backdrop swap.
+        // Covers both the freshly-populated CCA slots and the fixed Vivace card.
+        document.querySelectorAll('.checkpoint-icon').forEach(refineIcon);
     }
 
     // =====================================================================

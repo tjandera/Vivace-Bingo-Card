@@ -280,6 +280,23 @@
     animation: bob 3.4s ease-in-out infinite;
 }
 
+/* Applied by refineIcon() in app.js when the logo's aspect ratio is close
+   to 1:1.  Wide/tall logos are left alone so nothing gets awkwardly clipped. */
+.checkpoint-icon.is-square {
+    border-radius: 50%;
+}
+
+/* Applied by refineIcon() when the logo is mostly white/very light.  Swaps
+   the stamp interior to dark ink so white-text logos stay visible without
+   affecting the (accent-coloured) ring or drop shadow. */
+.stamp-circle.is-light {
+    background: var(--ink);
+}
+/* Keep the visited-state grey backdrop from being overridden by .is-light */
+.checkpoint-card.visited .stamp-circle.is-light {
+    background: #e8ecf0;
+}
+
 .checkpoint-name {
     font-family: 'Fredoka', sans-serif;
     font-weight: 600;
