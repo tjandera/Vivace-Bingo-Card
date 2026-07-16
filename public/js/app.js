@@ -214,12 +214,46 @@
                 var circle = img.closest && img.closest('.stamp-circle');
                 if (!circle) return;
 
-                // Mostly opaque = JPG or PNG-with-baked-bg.  Crop the image to
-                // fill the round stamp so its rectangular edge disappears.
+                // Mostly opaque = JPG or PNG-with-baked-bg.
                 var mostlyOpaque = (opaqueCount / totalPx) >= 0.95;
                 if (mostlyOpaque) {
-                    img.classList.add('is-opaque');
-                    return;   // no is-light path for opaque images
+                    // Near-square (aspect 0.80–1.25) → crop to a circular
+                    // thumbnail via .is-opaque.  Corner content loss is minimal
+                    // for logos in this range because their content is usually
+                    // centered with padding around it.
+                    if (ratio >= 0.80 && ratio <= 1.25) {
+                        img.classList.add('is-opaque');
+                        return;
+                    }
+                    // Wide or tall opaque logo — cover-cropping would slice
+                    // off large portions of the design.  Fall back to matching
+                    // the stamp background to the image's edge colour so the
+                    // rectangle blends into the circle without losing content.
+                    var rs = [], gs = [], bs = [];
+                    function sample(idx) {
+                        if (px[idx + 3] > 128) {
+                            rs.push(px[idx]); gs.push(px[idx + 1]); bs.push(px[idx + 2]);
+                        }
+                    }
+                    for (var x2 = 0; x2 < w; x2++) {
+                        sample(x2 * 4);
+                        sample(((h - 1) * w + x2) * 4);
+                    }
+                    for (var y2 = 0; y2 < h; y2++) {
+                        sample((y2 * w) * 4);
+                        sample((y2 * w + w - 1) * 4);
+                    }
+                    if (rs.length > 0) {
+                        var mean = function (a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; };
+                        var vari = function (a, m) { var s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return s / a.length; };
+                        var mR = mean(rs), mG = mean(gs), mB = mean(bs);
+                        var maxVar = Math.max(vari(rs, mR), vari(gs, mG), vari(bs, mB));
+                        if (maxVar < 500) {
+                            circle.style.background =
+                                'rgb(' + Math.round(mR) + ',' + Math.round(mG) + ',' + Math.round(mB) + ')';
+                        }
+                    }
+                    return;
                 }
 
                 // Transparent PNG with mostly-white content → dark backdrop.

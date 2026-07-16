@@ -6,6 +6,16 @@ const { booths }  = require("../models/booths");
 const { prizes }  = require("../models/prizes");
 const { catalog } = require("../models/cca-catalog");
 
+// GET /api/catalog  →  full CCA catalog as JSON (used by /test-logos.html)
+exports.getCatalog = (_req, res) => {
+    res.json(catalog.map(c => ({
+        id:     c.id,
+        name:   c.name,
+        logo:   c.logo,
+        accent: c.accent,
+    })));
+};
+
 // GET /  →  render the full stamp card
 exports.getStampCard = (req, res) => {
     // Boot codes for the fixed mandatory booth (Vivace's Gamebooth = b0).

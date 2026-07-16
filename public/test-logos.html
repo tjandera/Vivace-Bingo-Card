@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>All CCA logos — cropping test</title>
+<link rel="stylesheet" href="/css/tokens.css">
+<link rel="stylesheet" href="/css/base.css">
+<link rel="stylesheet" href="/css/card.css">
+<style>
+    body { padding: 24px 16px; background: var(--paper); }
+    h1 { font-family: 'Bagel Fat One', cursive; font-size: 22px; color: var(--ink); margin-bottom: 8px; text-align: center; }
+    .subhead { font-family: 'Fredoka', sans-serif; font-size: 13px; color: #555; text-align: center; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 20px 12px; max-width: 900px; margin: 0 auto; }
+    .cell { text-align: center; }
+    .cell .caption { font-family: 'Fredoka', sans-serif; font-size: 10px; color: var(--ink); margin-top: 10px; line-height: 1.3; word-break: break-word; }
+    .cell .cid { font-family: 'Space Mono', monospace; font-size: 9px; color: #777; margin-bottom: 2px; letter-spacing: .06em; }
+    .cell .tag { display: inline-block; font-family: 'Space Mono', monospace; font-size: 8px; padding: 1px 5px; border-radius: 6px; margin-top: 4px; letter-spacing: .04em; }
+    .tag.opaque { background: #dcfce7; color: #166534; }
+    .tag.light  { background: #fef3c7; color: #92400e; }
+    .tag.edge   { background: #dbeafe; color: #1e40af; }
+    .tag.square { background: #fce7f3; color: #9d174d; }
+    .stamp-wrap { display: flex; justify-content: center; align-items: center; min-height: 90px; }
+</style>
+</head>
+<body>
+<h1>All 86 CCA logos</h1>
+<p class="subhead">Same styling as the live app. Look for logos that are cropped, cut off, or blend poorly with the stamp background.</p>
+<div class="grid" id="grid"></div>
+
+<script src="/js/state.js"></script>
+<script>
+    // Same accent palette as models/cca-catalog.js
+    var ACCENTS = ['var(--yellow)','var(--orange)','var(--blue)','var(--green)',
+                   'var(--red)','var(--cyan)','var(--purple)','var(--pink)','var(--mint)'];
+
+    // The catalog is fetched from a lightweight endpoint so we don't have to
+    // duplicate the CCA list here.
+    fetch('/api/catalog').then(r => r.json()).then(catalog => {
+        var grid = document.getElementById('grid');
+        catalog.forEach(function (c) {
+            var cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.innerHTML =
+                '<div class="cid">#' + c.id.replace('c','') + '</div>' +
+                '<div class="stamp-wrap">' +
+                    '<div class="checkpoint-card">' +
+                        '<div class="stamp-circle" style="--accent:' + c.accent + '">' +
+                            '<img class="checkpoint-icon" src="' + c.logo + '" alt="' + c.name + '" crossorigin>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="caption">' + c.name + '</div>' +
+                '<div class="tag-row"></div>';
+            grid.appendChild(cell);
+
+            var img = cell.querySelector('.checkpoint-icon');
+            refineIconWithTags(img, cell.querySelector('.tag-row'));
+        });
+    });
+
+    // Simplified copy of refineIcon that also writes what it applied into
+    // the little tag row next to the stamp for easy debugging.
+    function refineIconWithTags(img, tagRow) {
+        function apply() {
+            if (!img.naturalWidth) return;
+            var ratio = img.naturalWidth / img.naturalHeight;
+            var tags = [];
+            if (ratio > 0.9 && ratio < 1.1) { img.classList.add('is-square'); tags.push('square'); }
+            try {
+                var w = Math.min(img.naturalWidth, 40);
+                var h = Math.min(img.naturalHeight, 40);
+                var cvs = document.createElement('canvas');
+                cvs.width = w; cvs.height = h;
+                var ctx = cvs.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                var px = ctx.getImageData(0, 0, w, h).data;
+                var bright = 0, opaqueCount = 0, totalPx = w * h;
+                for (var i = 0; i < px.length; i += 4) {
+                    if (px[i+3] > 128) { bright += (px[i]+px[i+1]+px[i+2])/3; opaqueCount++; }
+                }
+                var circle = img.closest('.stamp-circle');
+                if ((opaqueCount / totalPx) >= 0.95) {
+                    if (ratio >= 0.80 && ratio <= 1.25) {
+                        img.classList.add('is-opaque'); tags.push('opaque-crop');
+                    } else {
+                        var rs=[],gs=[],bs=[];
+                        function sample(idx){ if(px[idx+3]>128){rs.push(px[idx]);gs.push(px[idx+1]);bs.push(px[idx+2]);} }
+                        for(var x=0;x<w;x++){ sample(x*4); sample(((h-1)*w+x)*4); }
+                        for(var y=0;y<h;y++){ sample((y*w)*4); sample((y*w+w-1)*4); }
+                        if(rs.length){
+                            var mean=function(a){var s=0;for(var i=0;i<a.length;i++)s+=a[i];return s/a.length;};
+                            var vari=function(a,m){var s=0;for(var i=0;i<a.length;i++)s+=(a[i]-m)*(a[i]-m);return s/a.length;};
+                            var mR=mean(rs),mG=mean(gs),mB=mean(bs);
+                            var maxVar=Math.max(vari(rs,mR),vari(gs,mG),vari(bs,mB));
+                            if(maxVar<500){
+                                circle.style.background='rgb('+Math.round(mR)+','+Math.round(mG)+','+Math.round(mB)+')';
+                                tags.push('edge-match');
+                            } else {
+                                tags.push('rect-visible');
+                            }
+                        }
+                    }
+                } else if (opaqueCount > 0 && (bright/opaqueCount) > 220) {
+                    circle.classList.add('is-light'); tags.push('light');
+                }
+                tags.forEach(function(t){
+                    var el = document.createElement('span');
+                    el.className = 'tag ' + (t.includes('opaque')?'opaque':t.includes('light')?'light':t.includes('edge')?'edge':t.includes('rect')?'edge':'square');
+                    el.textContent = t;
+                    tagRow.appendChild(el);
+                });
+            } catch (e) {}
+        }
+        if (img.complete && img.naturalWidth > 0) apply();
+        else img.addEventListener('load', apply);
+    }
+</script>
+</body>
+</html>
