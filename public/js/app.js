@@ -191,7 +191,7 @@
         function apply() {
             if (!img.naturalWidth || !img.naturalHeight) return;
 
-            // Aspect: mark near-square logos so CSS can round them subtly.
+            // Aspect: mark near-square transparent logos so CSS can round them.
             var ratio = img.naturalWidth / img.naturalHeight;
             if (ratio > 0.9 && ratio < 1.1) img.classList.add('is-square');
 
@@ -204,7 +204,6 @@
                 ctx.drawImage(img, 0, 0, w, h);
                 var px = ctx.getImageData(0, 0, w, h).data;
 
-                // Overall brightness of opaque pixels (used for is-light fallback)
                 var bright = 0, opaqueCount = 0, totalPx = w * h;
                 for (var i = 0; i < px.length; i += 4) {
                     if (px[i + 3] > 128) {
@@ -215,46 +214,16 @@
                 var circle = img.closest && img.closest('.stamp-circle');
                 if (!circle) return;
 
-                // Consider an image "mostly opaque" when ≥95% of its pixels
-                // are opaque — that's a JPG or a PNG with a baked background.
-                var opaqueFrac = opaqueCount / totalPx;
-                var mostlyOpaque = opaqueFrac >= 0.95;
-
-                var edgeMatched = false;
+                // Mostly opaque = JPG or PNG-with-baked-bg.  Crop the image to
+                // fill the round stamp so its rectangular edge disappears.
+                var mostlyOpaque = (opaqueCount / totalPx) >= 0.95;
                 if (mostlyOpaque) {
-                    // Sample all four edge rows/columns, compute mean + variance.
-                    var rs = [], gs = [], bs = [];
-                    function sample(idx) {
-                        if (px[idx + 3] > 128) {
-                            rs.push(px[idx]); gs.push(px[idx + 1]); bs.push(px[idx + 2]);
-                        }
-                    }
-                    for (var x = 0; x < w; x++) {
-                        sample(x * 4);                       // top row
-                        sample(((h - 1) * w + x) * 4);       // bottom row
-                    }
-                    for (var y = 0; y < h; y++) {
-                        sample((y * w) * 4);                 // left column
-                        sample((y * w + w - 1) * 4);         // right column
-                    }
-                    if (rs.length > 0) {
-                        function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
-                        function vari(a, m) { var s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return s / a.length; }
-                        var mR = mean(rs), mG = mean(gs), mB = mean(bs);
-                        var maxVar = Math.max(vari(rs, mR), vari(gs, mG), vari(bs, mB));
-                        // Uniform enough? (std-dev ≲ 22 across channels)
-                        if (maxVar < 500) {
-                            circle.style.background =
-                                'rgb(' + Math.round(mR) + ',' + Math.round(mG) + ',' + Math.round(mB) + ')';
-                            edgeMatched = true;
-                        }
-                    }
+                    img.classList.add('is-opaque');
+                    return;   // no is-light path for opaque images
                 }
 
-                // is-light fallback: only when we DIDN'T match the edge colour.
-                // Handles transparent PNGs with white text (edge match doesn't
-                // apply because they're not mostly-opaque).
-                if (!edgeMatched && opaqueCount > 0 && (bright / opaqueCount) > 220) {
+                // Transparent PNG with mostly-white content → dark backdrop.
+                if (opaqueCount > 0 && (bright / opaqueCount) > 220) {
                     circle.classList.add('is-light');
                 }
             } catch (e) { /* CORS-tainted / other — skip refinement */ }

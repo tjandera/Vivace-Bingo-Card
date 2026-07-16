@@ -151,14 +151,14 @@
 }
 
 /* The circular stamp — colour ring uses --accent, ink outline via first shadow.
-   Background is white so any logo (transparent PNGs, dark logos on white,
-   light logos, etc.) reads cleanly against a consistent surface. No padding
-   here so the absolute-positioned lock-overlay covers the full circle. */
+   Background is a warm cream (--cream) so logos have a subtle surface to sit
+   against — dark logos pop, transparent-white logos still get an is-light
+   dark backdrop, opaque logos fill the whole disc via .is-opaque. */
 .stamp-circle {
     width: 76px;
     height: 76px;
     border-radius: 50%;
-    background: white;
+    background: var(--cream);
     border: 3px solid var(--accent, var(--ink));
     box-shadow: 0 0 0 2px var(--ink), 3px 3px 0 var(--ink);
     display: flex;
@@ -166,6 +166,8 @@
     justify-content: center;
     position: relative;
     transition: transform .12s ease, box-shadow .12s ease;
+    /* Keep opaque logos cropped inside the circle */
+    overflow: hidden;
 }
 
 .checkpoint-card:hover:not(.visited) .stamp-circle {
@@ -286,9 +288,23 @@
     border-radius: 50%;
 }
 
-/* Applied by refineIcon() when the logo is mostly white/very light.  Swaps
-   the stamp interior to dark ink so white-text logos stay visible without
-   affecting the (accent-coloured) ring or drop shadow. */
+/* Applied by refineIcon() when the logo is mostly opaque (JPG or PNG with
+   a baked background).  The image expands to fill the whole stamp interior
+   and gets clipped to a perfect circle by the container's overflow: hidden.
+   Rectangular edges disappear entirely — the logo looks like a native
+   circular thumbnail. Content near image corners may be cropped. */
+.checkpoint-icon.is-opaque {
+    max-width:  100%;
+    max-height: 100%;
+    width:  100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Applied by refineIcon() when the logo is mostly white/very light on
+   transparent bg.  Swaps the stamp interior to dark ink so white-text
+   logos stay visible without affecting the (accent-coloured) ring. */
 .stamp-circle.is-light {
     background: var(--ink);
 }
