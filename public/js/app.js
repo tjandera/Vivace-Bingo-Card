@@ -191,11 +191,10 @@
         function apply() {
             if (!img.naturalWidth || !img.naturalHeight) return;
 
-            // 1. Aspect: mark square-ish logos so CSS can round them.
+            // Aspect: mark near-square logos so CSS can round them subtly.
             var ratio = img.naturalWidth / img.naturalHeight;
             if (ratio > 0.9 && ratio < 1.1) img.classList.add('is-square');
 
-            // 2. Brightness: sample a downscaled copy, average opaque pixels.
             try {
                 var w = Math.min(img.naturalWidth,  40);
                 var h = Math.min(img.naturalHeight, 40);
@@ -204,18 +203,61 @@
                 var ctx = cvs.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
                 var px = ctx.getImageData(0, 0, w, h).data;
-                var sum = 0, count = 0;
+
+                // Overall brightness of opaque pixels (used for is-light fallback)
+                var bright = 0, opaqueCount = 0, totalPx = w * h;
                 for (var i = 0; i < px.length; i += 4) {
                     if (px[i + 3] > 128) {
-                        sum += (px[i] + px[i + 1] + px[i + 2]) / 3;
-                        count++;
+                        bright += (px[i] + px[i + 1] + px[i + 2]) / 3;
+                        opaqueCount++;
                     }
                 }
-                if (count > 0 && (sum / count) > 220) {
-                    var circle = img.closest && img.closest('.stamp-circle');
-                    if (circle) circle.classList.add('is-light');
+                var circle = img.closest && img.closest('.stamp-circle');
+                if (!circle) return;
+
+                // Consider an image "mostly opaque" when ≥95% of its pixels
+                // are opaque — that's a JPG or a PNG with a baked background.
+                var opaqueFrac = opaqueCount / totalPx;
+                var mostlyOpaque = opaqueFrac >= 0.95;
+
+                var edgeMatched = false;
+                if (mostlyOpaque) {
+                    // Sample all four edge rows/columns, compute mean + variance.
+                    var rs = [], gs = [], bs = [];
+                    function sample(idx) {
+                        if (px[idx + 3] > 128) {
+                            rs.push(px[idx]); gs.push(px[idx + 1]); bs.push(px[idx + 2]);
+                        }
+                    }
+                    for (var x = 0; x < w; x++) {
+                        sample(x * 4);                       // top row
+                        sample(((h - 1) * w + x) * 4);       // bottom row
+                    }
+                    for (var y = 0; y < h; y++) {
+                        sample((y * w) * 4);                 // left column
+                        sample((y * w + w - 1) * 4);         // right column
+                    }
+                    if (rs.length > 0) {
+                        function mean(a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; }
+                        function vari(a, m) { var s = 0; for (var i = 0; i < a.length; i++) s += (a[i] - m) * (a[i] - m); return s / a.length; }
+                        var mR = mean(rs), mG = mean(gs), mB = mean(bs);
+                        var maxVar = Math.max(vari(rs, mR), vari(gs, mG), vari(bs, mB));
+                        // Uniform enough? (std-dev ≲ 22 across channels)
+                        if (maxVar < 500) {
+                            circle.style.background =
+                                'rgb(' + Math.round(mR) + ',' + Math.round(mG) + ',' + Math.round(mB) + ')';
+                            edgeMatched = true;
+                        }
+                    }
                 }
-            } catch (e) { /* CORS-tainted / other — skip brightness detection */ }
+
+                // is-light fallback: only when we DIDN'T match the edge colour.
+                // Handles transparent PNGs with white text (edge match doesn't
+                // apply because they're not mostly-opaque).
+                if (!edgeMatched && opaqueCount > 0 && (bright / opaqueCount) > 220) {
+                    circle.classList.add('is-light');
+                }
+            } catch (e) { /* CORS-tainted / other — skip refinement */ }
         }
 
         if (img.complete && img.naturalWidth > 0) apply();
