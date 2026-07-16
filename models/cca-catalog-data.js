@@ -36,7 +36,7 @@ const ccas = [
     { id:  30, name: 'SMU BIZCOM', cluster: 'GRI', logo: '/images/ccas/30.png' },
     { id:  31, name: 'The Mentoring Circle', cluster: 'GRI', logo: '/images/ccas/31.jpg' },
     { id:  32, name: 'SMU Artificial Intelligence Club', cluster: 'GRI', logo: '/images/ccas/32.png' },
-    { id:  33, name: 'SMU Students\' Association (SMUSA)', cluster: 'GRI', logo: '/images/ccas/33.avif' },
+    { id:  33, name: 'SMU Students\' Association (SMUSA)', cluster: 'GRI', logo: '/images/ccas/33.png' },
     { id:  34, name: 'SMU Peer Helpers', cluster: 'GRI', logo: '/images/ccas/34.png' },
     { id:  35, name: 'SMU Ambassadorial Corps', cluster: 'GRI', logo: '/images/ccas/35.jpg' },
     { id:  36, name: 'SMU Muslim Society', cluster: 'GRI', logo: '/images/ccas/36.png' },
