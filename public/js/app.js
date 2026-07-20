@@ -191,6 +191,81 @@
     // Same-origin canvas access is used to sample brightness; if it ever
     // throws (e.g. tainted canvas) we silently skip that logo.
     // =====================================================================
+    // Predict whether cover-cropping this logo into the circular stamp will
+    // clip visible content.  Directly simulate the render: for each pixel in
+    // the natural image, work out (a) whether it survives the object-fit:
+    // cover center-crop, and (b) whether it survives the circular mask.
+    // Count "lost" pixels that differ from the background (real content).
+    // If more than ~10 pixels of content are clipped (at 160×160 sample),
+    // fall through to edge-match so the whole logo stays visible.
+    //
+    // Confirmed catches: EYE Investment ('INVESTMENT' bottom text), Smart
+    // City ('Smart' left edge), Uni-Y ('UNIVERSITY-YMCA' bottom text),
+    // Ivory Keys ('SMU IVORY KEYS' bottom text), Chamber Choir ('cho...'
+    // right cut), Mentoring/Dhamma Circle (Sanskrit tags), Fencing
+    // ('SMU FENCING EST 2005' bottom).  Preserves centered-content logos
+    // (Purple, Kendo, Cru, Netball, Trekking, …) as opaque-crop.
+    function edgesAreClean(img) {
+        try {
+            var CW = Math.min(img.naturalWidth,  160);
+            var CH = Math.min(img.naturalHeight, 160);
+            var cvs = document.createElement('canvas');
+            cvs.width = CW; cvs.height = CH;
+            var ctx = cvs.getContext('2d');
+            ctx.drawImage(img, 0, 0, CW, CH);
+            var px = ctx.getImageData(0, 0, CW, CH).data;
+
+            // Background brightness: median of the 4 corner pixels.
+            function bAt(x, y) { var i = (y*CW + x)*4; return (px[i]+px[i+1]+px[i+2])/3; }
+            var corners = [bAt(0,0), bAt(CW-1,0), bAt(0,CH-1), bAt(CW-1,CH-1)].sort(function(a,b){return a-b;});
+            var bg = (corners[1] + corners[2]) / 2;
+            var CONTENT_DELTA = 40;
+
+            // object-fit: cover simulation.  For an aspect-1.24 landscape
+            // image (400x323), scale factor = CH/short(CW,CH) actually no —
+            // cover means scale factor = max(1, target/source).  In our case
+            // the target is a square disc.  Assuming a square target:
+            //   scale = max(TARGET/CW, TARGET/CH)
+            // Since we only care about which pixels are RETAINED after
+            // center-crop, we can work in normalised coordinates: the
+            // retained region is the largest centered square that fits in
+            // the source.  For landscape (CW>CH): centered CH×CH square,
+            // horizontal margin = (CW-CH)/2 on each side.
+            // For portrait: centered CW×CW square, vertical margin = (CH-CW)/2.
+            var short = Math.min(CW, CH);
+            var cropX0 = Math.floor((CW - short) / 2);
+            var cropY0 = Math.floor((CH - short) / 2);
+            var cx = cropX0 + short / 2;
+            var cy = cropY0 + short / 2;
+            var r  = short / 2;
+            var r2 = r * r;
+
+            // Count content pixels that would be clipped (either by center-
+            // crop margins OR by circle mask on the retained square).
+            var lostContent = 0;
+            for (var y = 0; y < CH; y++) {
+                for (var x = 0; x < CW; x++) {
+                    var i = (y*CW + x) * 4;
+                    var b = (px[i] + px[i+1] + px[i+2]) / 3;
+                    if (Math.abs(b - bg) <= CONTENT_DELTA) continue;
+
+                    // Outside center-crop margins → lost.
+                    var outsideCrop = (x < cropX0 || x >= cropX0 + short ||
+                                       y < cropY0 || y >= cropY0 + short);
+                    if (outsideCrop) { lostContent++; continue; }
+
+                    // Inside the retained square but outside its inscribed
+                    // circle → also lost.
+                    var dx = x - cx, dy = y - cy;
+                    if (dx*dx + dy*dy > r2) lostContent++;
+                }
+            }
+            return lostContent <= 10;
+        } catch (e) {
+            return true;
+        }
+    }
+
     function refineIcon(img) {
         function apply() {
             if (!img.naturalWidth || !img.naturalHeight) return;
@@ -226,8 +301,13 @@
                     // Near-square (aspect 0.80–1.25) → crop to a circular
                     // thumbnail via .is-opaque.  Corner content loss is minimal
                     // for logos in this range because their content is usually
-                    // centered with padding around it.
-                    if (ratio >= 0.80 && ratio <= 1.25) {
+                    // centered with padding around it — but some 4:3 logos
+                    // (EYE Investment, Smart City, Uni-Y, Chao Vietnam, Ivory
+                    // Keys) have text extending to the edge, so cover-crop
+                    // clips it.  Sample the 4 corners at higher res; if any
+                    // has busy content, skip the crop and fall through to
+                    // edge-match, which keeps the whole logo visible.
+                    if (ratio >= 0.80 && ratio <= 1.25 && edgesAreClean(img)) {
                         img.classList.add('is-opaque');
                         return;
                     }

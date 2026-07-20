@@ -59,6 +59,34 @@
         });
     });
 
+    // Mirror of edgesAreClean() in app.js — see there for rationale.
+    function edgesAreClean(img) {
+        try {
+            var CW = Math.min(img.naturalWidth,  160);
+            var CH = Math.min(img.naturalHeight, 160);
+            var cvs = document.createElement('canvas');
+            cvs.width = CW; cvs.height = CH;
+            var ctx = cvs.getContext('2d');
+            ctx.drawImage(img, 0, 0, CW, CH);
+            var px = ctx.getImageData(0, 0, CW, CH).data;
+            function bAt(x,y){ var i=(y*CW+x)*4; return (px[i]+px[i+1]+px[i+2])/3; }
+            var corners = [bAt(0,0), bAt(CW-1,0), bAt(0,CH-1), bAt(CW-1,CH-1)].sort(function(a,b){return a-b;});
+            var bg = (corners[1] + corners[2]) / 2;
+            var short = Math.min(CW, CH);
+            var cropX0 = Math.floor((CW - short) / 2), cropY0 = Math.floor((CH - short) / 2);
+            var cx = cropX0 + short/2, cy = cropY0 + short/2, r2 = (short/2)*(short/2);
+            var lost = 0;
+            for (var y=0;y<CH;y++) for (var x=0;x<CW;x++) {
+                var i=(y*CW+x)*4, b=(px[i]+px[i+1]+px[i+2])/3;
+                if (Math.abs(b-bg) <= 40) continue;
+                if (x<cropX0||x>=cropX0+short||y<cropY0||y>=cropY0+short) { lost++; continue; }
+                var dx=x-cx, dy=y-cy;
+                if (dx*dx + dy*dy > r2) lost++;
+            }
+            return lost <= 10;
+        } catch (e) { return true; }
+    }
+
     // Simplified copy of refineIcon that also writes what it applied into
     // the little tag row next to the stamp for easy debugging.
     function refineIconWithTags(img, tagRow) {
@@ -85,9 +113,10 @@
                 }
                 var circle = img.closest('.stamp-circle');
                 if ((opaqueCount / totalPx) >= 0.95) {
-                    if (ratio >= 0.80 && ratio <= 1.25) {
+                    if (ratio >= 0.80 && ratio <= 1.25 && edgesAreClean(img)) {
                         img.classList.add('is-opaque'); tags.push('opaque-crop');
                     } else {
+                        if (ratio >= 0.80 && ratio <= 1.25) tags.push('busy-edges');
                         var rs=[],gs=[],bs=[];
                         function sample(idx){ if(px[idx+3]>128){rs.push(px[idx]);gs.push(px[idx+1]);bs.push(px[idx+2]);} }
                         for(var x=0;x<w;x++){ sample(x*4); sample(((h-1)*w+x)*4); }
@@ -115,7 +144,7 @@
                 }
                 tags.forEach(function(t){
                     var el = document.createElement('span');
-                    el.className = 'tag ' + (t.includes('opaque')?'opaque':t.includes('light')?'light':t.includes('edge')?'edge':t.includes('rect')?'edge':'square');
+                    el.className = 'tag ' + (t.includes('opaque')?'opaque':t.includes('light')?'light':t.includes('edge')?'edge':t.includes('rect')?'edge':t.includes('busy')?'edge':t === 'square'?'square':'edge');
                     el.textContent = t;
                     tagRow.appendChild(el);
                 });
