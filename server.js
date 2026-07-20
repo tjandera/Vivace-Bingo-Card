@@ -12,9 +12,10 @@
 // Uses Node 20.6+'s built-in loader so we don't need the dotenv package.
 try { process.loadEnvFile(); } catch (e) { /* no .env file — using shell env */ }
 
-const express = require("express");
-const path    = require("path");
-const routes  = require("./routes/index");
+const express     = require("express");
+const compression = require("compression");
+const path        = require("path");
+const routes      = require("./routes/index");
 
 const server   = express();
 const hostname = "localhost";
@@ -26,13 +27,18 @@ const port     = process.env.PORT || 8000;
 // EJS templates live in views/ by default; no need to set the path.
 server.set("view engine", "ejs");
 
+// --- Compression ------------------------------------------------------
+// gzip HTML/JSON/CSS/JS on the wire.  Cuts the pre-gzip 88 KB of client
+// assets to ~25 KB, which shows up on phones tethered to conference wifi.
+// Mount BEFORE express.static so static responses go through it too.
+server.use(compression());
+
 // --- Static assets ----------------------------------------------------
 // Serves everything in public/ at the URL root, e.g. /css/card.css.
-// maxAge caches CSS/JS/images in the browser.  Kept short (1 hour) so
-// deployed changes appear on phones without needing a hard refresh.
-// Bump this to '1d' or '7d' once the app stabilises for a real speedup.
+// CSS/JS carry a ?v=<assetVersion> query string so a redeploy busts the
+// browser cache; image URLs are stable and are safe to cache longer.
 server.use(express.static(path.join(__dirname, "public"), {
-    maxAge: "1h",
+    maxAge: "1d",
     etag:   true,
 }));
 

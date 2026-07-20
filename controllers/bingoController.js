@@ -51,6 +51,13 @@ exports.getStampCard = (req, res) => {
     const CCA_SLOTS   = 11;
     const totalBooths = booths.length + CCA_SLOTS;
 
+    // The HTML is identical for every visitor — per-user state lives in
+    // localStorage and gets applied client-side.  Let Vercel's edge cache
+    // absorb the CCA-fair peak instead of cold-starting the function each
+    // hit.  stale-while-revalidate keeps things snappy across the 60 s
+    // boundary.
+    res.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+
     res.render("index", {
         pageTitle:          "VIVACE 2026 — Stamp Card",
         eventName:          "VIVACE",

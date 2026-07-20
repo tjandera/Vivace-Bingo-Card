@@ -20,6 +20,15 @@
     var $congrats    = document.getElementById('congratsModal');
     var $liveRegion  = document.getElementById('liveAnnounce');
 
+    // ---- Cached stamp/prize NodeLists ---------------------------------
+    // Populated by rebindStamps() after app.js finishes hydrating CCA
+    // slots; re-populated whenever the user switches accounts (slot DOM
+    // node identity stays the same but data-id changes, so the NodeList
+    // itself is still valid — we just refresh for symmetry / future-proof).
+    var _cards      = [];
+    var _dots       = [];
+    var _prizeTiles = {};
+
     // ---- SCROLL LOCK ---------------------------------------------------
     // When a modal opens, prevent the page beneath from scrolling.
     // iOS Safari needs position:fixed + preserved scroll position or the
@@ -186,13 +195,16 @@
 
     // ---- MAIN RENDER LOOP ---------------------------------------------
     // Reads State and pushes it into the DOM.  Called after every action.
+    // Iterates the NodeLists cached by rebindStamps() so we don't re-query
+    // the DOM on every state change (login, stamp, redeem, switch).
     function render() {
         var visited      = State.visitedBooths;
         var redeemed     = State.redeemedPrizes;
         var mandatoryOK  = visited.indexOf(MANDATORY_BOOTH_ID) !== -1;
 
         // --- Booth cards ---
-        document.querySelectorAll('.checkpoint-card').forEach(function (card) {
+        for (var ci = 0; ci < _cards.length; ci++) {
+            var card      = _cards[ci];
             var id        = card.dataset.id;
             var name      = card.dataset.name;
             var isVisited = visited.indexOf(id) !== -1;
@@ -218,25 +230,28 @@
                 card.setAttribute('tabindex',     '0');
                 card.removeAttribute('aria-disabled');
             }
-        });
+        }
 
         // --- Progress roadmap ---
         var n = visited.length;
         $fill.style.width = (n / TOTAL_BOOTHS * 100) + '%';
         $count.textContent = n;
-        document.querySelectorAll('.roadmap-dot').forEach(function (dot) {
+        for (var di = 0; di < _dots.length; di++) {
+            var dot = _dots[di];
             dot.classList.toggle('visited', visited.indexOf(dot.dataset.id) !== -1);
-        });
+        }
         if ($bar) {
             $bar.setAttribute('aria-valuenow',  n);
             $bar.setAttribute('aria-valuetext', n + ' of ' + TOTAL_BOOTHS + ' booths visited');
         }
 
         // --- Prize tiles ---
-        Object.keys(PRIZE_CONFIG).forEach(function (key) {
-            var el = document.querySelector('.prize-tile[data-prize="' + key + '"]');
-            if (!el) return;
-            var pid       = Number(key);
+        var keys = Object.keys(PRIZE_CONFIG);
+        for (var pi = 0; pi < keys.length; pi++) {
+            var key = keys[pi];
+            var el  = _prizeTiles[key];
+            if (!el) continue;
+            var pid        = Number(key);
             var isRedeemed = redeemed.indexOf(pid) !== -1;
             var available  = n >= PRIZE_CONFIG[key] && !isRedeemed;
             el.classList.toggle('available', available);
@@ -246,7 +261,7 @@
             el.setAttribute('aria-label',
                 'Prize ' + key + ' (' + PRIZE_CONFIG[key] + ' stamps)' +
                 (isRedeemed ? ' — redeemed' : available ? ' — available to claim' : ' — locked'));
-        });
+        }
 
         // --- Name display ---
         if (State.currentUsername) {
@@ -330,6 +345,25 @@
         if (e.target === $congrats) closeCongrats();
     });
 
+    // ---- STAMP / DOT / PRIZE CACHE REBIND -----------------------------
+    // Called by app.js after it hydrates the CCA slots so render() can
+    // iterate a cached NodeList instead of re-querying the DOM on every
+    // state change.  Also called once at load for the initial paint.
+    function rebindStamps() {
+        _cards      = document.querySelectorAll('.checkpoint-card');
+        _dots       = document.querySelectorAll('.roadmap-dot');
+        _prizeTiles = {};
+        var keys = Object.keys(PRIZE_CONFIG);
+        for (var i = 0; i < keys.length; i++) {
+            _prizeTiles[keys[i]] =
+                document.querySelector('.prize-tile[data-prize="' + keys[i] + '"]');
+        }
+    }
+
+    // Initial bind — captures the fixed b0 card + empty slot stubs so
+    // early renders (e.g. during login) still work before CCAs hydrate.
+    rebindStamps();
+
     // ---- Public API ---------------------------------------------------
     window.Vivace.UI = {
         lockScroll:   lockScroll,
@@ -342,6 +376,7 @@
         showLogin:    showLogin,
         hideLogin:    hideLogin,
         render:       render,
+        rebindStamps: rebindStamps,
         showCongrats: showCongrats,
         closeCongrats: closeCongrats,
         showRedemption: showRedemption,

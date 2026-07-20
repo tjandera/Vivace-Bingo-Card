@@ -19,6 +19,10 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/images/vivace-logo.png">
 
+<!-- Preload the Vivace logo — it's the LCP image (header + b0 stamp +
+     congrats/voucher modals all reference the same file). -->
+<link rel="preload" as="image" href="/images/vivace-logo.png">
+
 <title><%= pageTitle %></title>
 
 <!-- Google Fonts (preconnect saves ~100ms on first paint) -->
@@ -32,3 +36,9 @@
 <link rel="stylesheet" href="/css/card.css?v=<%= assetVersion %>">     <!-- Main stamp-card layout -->
 <link rel="stylesheet" href="/css/modals.css?v=<%= assetVersion %>">   <!-- Login overlay + modals + toast -->
 <link rel="stylesheet" href="/css/install.css?v=<%= assetVersion %>">  <!-- iOS Add-to-Home-Screen UI -->
+
+<!-- Vercel Speed Insights — real-user LCP/INP/CLS during the event.
+     Enable in the Vercel dashboard for the project.  Deferred so it never
+     blocks first paint.  Note the path is /speed-insights/ (not /insights/,
+     which is Vercel Web Analytics — a different product). -->
+<script defer src="/_vercel/speed-insights/script.js"></script>

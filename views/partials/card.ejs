@@ -12,7 +12,7 @@
 
         <!-- Card header (Vivace logo) -->
         <div class="card-header">
-            <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="header-logo">
+            <img src="/images/vivace-logo.png" alt="VIVACE 2026" class="header-logo" decoding="async">
         </div>
 
         <!-- Participant row: name pill + install button + switch-user button -->
@@ -47,7 +47,8 @@
                 <div class="stamp-circle">
                     <img class="checkpoint-icon"
                          src="<%= booth.logo %>"
-                         alt="<%= booth.name %>">
+                         alt="<%= booth.name %>"
+                         decoding="async">
                     <div class="lock-overlay" aria-hidden="true">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="4" y="11" width="16" height="10" rx="2"/>
@@ -62,7 +63,7 @@
             <% for (var s = 0; s < ccaSlots; s++) { %>
             <div class="checkpoint-card checkpoint-slot" data-slot="<%= s %>" onclick="handleBoothClick(this)">
                 <div class="stamp-circle">
-                    <img class="checkpoint-icon" src="" alt="">
+                    <img class="checkpoint-icon" src="" alt="" decoding="async">
                     <div class="lock-overlay" aria-hidden="true">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="4" y="11" width="16" height="10" rx="2"/>

@@ -191,79 +191,50 @@
     // Same-origin canvas access is used to sample brightness; if it ever
     // throws (e.g. tainted canvas) we silently skip that logo.
     // =====================================================================
-    // Predict whether cover-cropping this logo into the circular stamp will
-    // clip visible content.  Directly simulate the render: for each pixel in
-    // the natural image, work out (a) whether it survives the object-fit:
-    // cover center-crop, and (b) whether it survives the circular mask.
-    // Count "lost" pixels that differ from the background (real content).
-    // If more than ~10 pixels of content are clipped (at 160×160 sample),
-    // fall through to edge-match so the whole logo stays visible.
+
+    // Given the pixel buffer of a logo, predict whether cover-cropping it
+    // into the circular stamp will clip visible content.  For each pixel,
+    // work out (a) whether it survives the object-fit: cover center-crop
+    // and (b) whether it survives the circular mask, then count "lost"
+    // pixels that differ from the background (real content).
     //
-    // Confirmed catches: EYE Investment ('INVESTMENT' bottom text), Smart
-    // City ('Smart' left edge), Uni-Y ('UNIVERSITY-YMCA' bottom text),
-    // Ivory Keys ('SMU IVORY KEYS' bottom text), Chamber Choir ('cho...'
-    // right cut), Mentoring/Dhamma Circle (Sanskrit tags), Fencing
-    // ('SMU FENCING EST 2005' bottom).  Preserves centered-content logos
-    // (Purple, Kendo, Cru, Netball, Trekking, …) as opaque-crop.
-    function edgesAreClean(img) {
-        try {
-            var CW = Math.min(img.naturalWidth,  160);
-            var CH = Math.min(img.naturalHeight, 160);
-            var cvs = document.createElement('canvas');
-            cvs.width = CW; cvs.height = CH;
-            var ctx = cvs.getContext('2d');
-            ctx.drawImage(img, 0, 0, CW, CH);
-            var px = ctx.getImageData(0, 0, CW, CH).data;
+    // Threshold `lostContent <= 10` is tuned for a 160×160 buffer.  Confirmed
+    // catches: EYE Investment ('INVESTMENT' bottom text), Smart City ('Smart'
+    // left edge), Uni-Y ('UNIVERSITY-YMCA' bottom text), Ivory Keys ('SMU
+    // IVORY KEYS' bottom text), Chamber Choir ('cho…' right cut), Mentoring
+    // /Dhamma Circle (Sanskrit tags), Fencing ('SMU FENCING EST 2005'
+    // bottom).  Preserves centered-content logos (Purple, Kendo, Cru,
+    // Netball, Trekking, …) as opaque-crop.
+    function edgesAreCleanFromBuffer(px, W, H) {
+        function bAt(x, y) { var i = (y*W + x)*4; return (px[i]+px[i+1]+px[i+2])/3; }
+        var corners = [bAt(0,0), bAt(W-1,0), bAt(0,H-1), bAt(W-1,H-1)].sort(function(a,b){return a-b;});
+        var bg = (corners[1] + corners[2]) / 2;
+        var CONTENT_DELTA = 40;
 
-            // Background brightness: median of the 4 corner pixels.
-            function bAt(x, y) { var i = (y*CW + x)*4; return (px[i]+px[i+1]+px[i+2])/3; }
-            var corners = [bAt(0,0), bAt(CW-1,0), bAt(0,CH-1), bAt(CW-1,CH-1)].sort(function(a,b){return a-b;});
-            var bg = (corners[1] + corners[2]) / 2;
-            var CONTENT_DELTA = 40;
+        // Largest centered square that fits in the source (== what cover-crop
+        // retains for a square target).  For landscape: horizontal margins;
+        // for portrait: vertical margins.  The circle then inscribes that.
+        var short = Math.min(W, H);
+        var cropX0 = Math.floor((W - short) / 2);
+        var cropY0 = Math.floor((H - short) / 2);
+        var cx = cropX0 + short / 2;
+        var cy = cropY0 + short / 2;
+        var r  = short / 2;
+        var r2 = r * r;
 
-            // object-fit: cover simulation.  For an aspect-1.24 landscape
-            // image (400x323), scale factor = CH/short(CW,CH) actually no —
-            // cover means scale factor = max(1, target/source).  In our case
-            // the target is a square disc.  Assuming a square target:
-            //   scale = max(TARGET/CW, TARGET/CH)
-            // Since we only care about which pixels are RETAINED after
-            // center-crop, we can work in normalised coordinates: the
-            // retained region is the largest centered square that fits in
-            // the source.  For landscape (CW>CH): centered CH×CH square,
-            // horizontal margin = (CW-CH)/2 on each side.
-            // For portrait: centered CW×CW square, vertical margin = (CH-CW)/2.
-            var short = Math.min(CW, CH);
-            var cropX0 = Math.floor((CW - short) / 2);
-            var cropY0 = Math.floor((CH - short) / 2);
-            var cx = cropX0 + short / 2;
-            var cy = cropY0 + short / 2;
-            var r  = short / 2;
-            var r2 = r * r;
-
-            // Count content pixels that would be clipped (either by center-
-            // crop margins OR by circle mask on the retained square).
-            var lostContent = 0;
-            for (var y = 0; y < CH; y++) {
-                for (var x = 0; x < CW; x++) {
-                    var i = (y*CW + x) * 4;
-                    var b = (px[i] + px[i+1] + px[i+2]) / 3;
-                    if (Math.abs(b - bg) <= CONTENT_DELTA) continue;
-
-                    // Outside center-crop margins → lost.
-                    var outsideCrop = (x < cropX0 || x >= cropX0 + short ||
-                                       y < cropY0 || y >= cropY0 + short);
-                    if (outsideCrop) { lostContent++; continue; }
-
-                    // Inside the retained square but outside its inscribed
-                    // circle → also lost.
-                    var dx = x - cx, dy = y - cy;
-                    if (dx*dx + dy*dy > r2) lostContent++;
-                }
+        var lostContent = 0;
+        for (var y = 0; y < H; y++) {
+            for (var x = 0; x < W; x++) {
+                var i = (y*W + x) * 4;
+                var b = (px[i] + px[i+1] + px[i+2]) / 3;
+                if (Math.abs(b - bg) <= CONTENT_DELTA) continue;
+                if (x < cropX0 || x >= cropX0 + short ||
+                    y < cropY0 || y >= cropY0 + short) { lostContent++; continue; }
+                var dx = x - cx, dy = y - cy;
+                if (dx*dx + dy*dy > r2) lostContent++;
             }
-            return lostContent <= 10;
-        } catch (e) {
-            return true;
         }
+        return lostContent <= 10;
     }
 
     function refineIcon(img) {
@@ -275,15 +246,22 @@
             if (ratio > 0.9 && ratio < 1.1) img.classList.add('is-square');
 
             try {
-                var w = Math.min(img.naturalWidth,  40);
-                var h = Math.min(img.naturalHeight, 40);
+                // Only opaque logos in the near-square aspect range are
+                // candidates for the cover-crop edge check; those need the
+                // 160×160 buffer to keep edgesAreCleanFromBuffer accurate.
+                // For everything else the cheap 40×40 sample is enough.
+                var needsEdgeCheck = ratio >= 0.80 && ratio <= 1.25;
+                var W = needsEdgeCheck ? Math.min(img.naturalWidth,  160)
+                                       : Math.min(img.naturalWidth,   40);
+                var H = needsEdgeCheck ? Math.min(img.naturalHeight, 160)
+                                       : Math.min(img.naturalHeight,  40);
                 var cvs = document.createElement('canvas');
-                cvs.width = w; cvs.height = h;
+                cvs.width = W; cvs.height = H;
                 var ctx = cvs.getContext('2d');
-                ctx.drawImage(img, 0, 0, w, h);
-                var px = ctx.getImageData(0, 0, w, h).data;
+                ctx.drawImage(img, 0, 0, W, H);
+                var px = ctx.getImageData(0, 0, W, H).data;
 
-                var bright = 0, opaqueCount = 0, brightPx = 0, totalPx = w * h;
+                var bright = 0, opaqueCount = 0, brightPx = 0, totalPx = W * H;
                 for (var i = 0; i < px.length; i += 4) {
                     if (px[i + 3] > 128) {
                         var b = (px[i] + px[i + 1] + px[i + 2]) / 3;
@@ -298,36 +276,31 @@
                 // Mostly opaque = JPG or PNG-with-baked-bg.
                 var mostlyOpaque = (opaqueCount / totalPx) >= 0.95;
                 if (mostlyOpaque) {
-                    // Near-square (aspect 0.80–1.25) → crop to a circular
-                    // thumbnail via .is-opaque.  Corner content loss is minimal
-                    // for logos in this range because their content is usually
-                    // centered with padding around it — but some 4:3 logos
-                    // (EYE Investment, Smart City, Uni-Y, Chao Vietnam, Ivory
-                    // Keys) have text extending to the edge, so cover-crop
-                    // clips it.  Sample the 4 corners at higher res; if any
-                    // has busy content, skip the crop and fall through to
-                    // edge-match, which keeps the whole logo visible.
-                    if (ratio >= 0.80 && ratio <= 1.25 && edgesAreClean(img)) {
+                    // Near-square opaque → cover-crop to a circular thumbnail
+                    // unless the edge simulation says content would be clipped
+                    // (EYE Investment, Uni-Y, Ivory Keys, Fencing, …).  Reuses
+                    // the same pixel buffer we already drew for brightness.
+                    if (needsEdgeCheck && edgesAreCleanFromBuffer(px, W, H)) {
                         img.classList.add('is-opaque');
                         return;
                     }
-                    // Wide or tall opaque logo — cover-cropping would slice
-                    // off large portions of the design.  Fall back to matching
-                    // the stamp background to the image's edge colour so the
-                    // rectangle blends into the circle without losing content.
+                    // Wide/tall or edge-heavy opaque logo — fall back to
+                    // matching the stamp background to the image's edge colour
+                    // so the rectangle blends into the circle without losing
+                    // content.
                     var rs = [], gs = [], bs = [];
                     function sample(idx) {
                         if (px[idx + 3] > 128) {
                             rs.push(px[idx]); gs.push(px[idx + 1]); bs.push(px[idx + 2]);
                         }
                     }
-                    for (var x2 = 0; x2 < w; x2++) {
+                    for (var x2 = 0; x2 < W; x2++) {
                         sample(x2 * 4);
-                        sample(((h - 1) * w + x2) * 4);
+                        sample(((H - 1) * W + x2) * 4);
                     }
-                    for (var y2 = 0; y2 < h; y2++) {
-                        sample((y2 * w) * 4);
-                        sample((y2 * w + w - 1) * 4);
+                    for (var y2 = 0; y2 < H; y2++) {
+                        sample((y2 * W) * 4);
+                        sample((y2 * W + W - 1) * 4);
                     }
                     if (rs.length > 0) {
                         var mean = function (a) { var s = 0; for (var i = 0; i < a.length; i++) s += a[i]; return s / a.length; };
@@ -462,6 +435,11 @@
         // Refine every logo — square rounding + light-logo backdrop swap.
         // Covers both the freshly-populated CCA slots and the fixed Vivace card.
         document.querySelectorAll('.checkpoint-icon').forEach(refineIcon);
+
+        // Refresh UI's cached stamp NodeLists.  The slot elements themselves
+        // are stable, so the initial bind at ui.js load still works — but
+        // this keeps things robust if we ever start recreating slot nodes.
+        UI.rebindStamps();
     }
 
     // =====================================================================
