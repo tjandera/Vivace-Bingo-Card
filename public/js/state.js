@@ -13,8 +13,9 @@
     // We namespace everything under `vivace_` so we don't collide with other
     // apps that might be sharing localStorage on the same origin.
     var USERNAME_KEY = 'vivace_username';
-    function visitedKey(u)  { return 'vivace_' + u + '_visited'; }
-    function redeemedKey(u) { return 'vivace_' + u + '_redeemed'; }
+    function visitedKey(u)      { return 'vivace_' + u + '_visited'; }
+    function redeemedKey(u)     { return 'vivace_' + u + '_redeemed'; }
+    function ccaSelectionKey(u) { return 'vivace_' + u + '_cca_selection'; }
 
     // ---- Client-side hash ----------------------------------------------
     // Must produce the SAME output as utils/hash.js on the server.
@@ -93,6 +94,21 @@
             this.currentUsername = null;
             this.visitedBooths   = [];
             this.redeemedPrizes  = [];
+        },
+
+        // ---- CCA selection persistence (per-user) ------------------------
+        // The 11 CCAs each user is randomly assigned live under their own
+        // key, so switching accounts on the same device re-randomizes for
+        // the new name, and switching back restores the original picks.
+        getCcaSelection: function (username) {
+            try {
+                return JSON.parse(localStorage.getItem(ccaSelectionKey(username))) || null;
+            } catch (e) { return null; }
+        },
+        setCcaSelection: function (username, ids) {
+            try {
+                localStorage.setItem(ccaSelectionKey(username), JSON.stringify(ids));
+            } catch (e) { /* private mode / storage full — same failure class handled elsewhere */ }
         },
     };
 

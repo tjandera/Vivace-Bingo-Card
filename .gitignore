@@ -25,6 +25,7 @@ npm-debug.log*
 
 # Booth answer key — never commit
 ANSWER_KEY.md
+BOOTH_CODES.md
 
 # Raw source data (the interest-form spreadsheet contains old numerical
 # codes in Sheet 2, and the unsanitised logo dump is ~29MB).  The sanitised

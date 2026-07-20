@@ -75,9 +75,13 @@
                 var ctx = cvs.getContext('2d');
                 ctx.drawImage(img, 0, 0, w, h);
                 var px = ctx.getImageData(0, 0, w, h).data;
-                var bright = 0, opaqueCount = 0, totalPx = w * h;
+                var bright = 0, opaqueCount = 0, brightPx = 0, totalPx = w * h;
                 for (var i = 0; i < px.length; i += 4) {
-                    if (px[i+3] > 128) { bright += (px[i]+px[i+1]+px[i+2])/3; opaqueCount++; }
+                    if (px[i+3] > 128) {
+                        var b = (px[i]+px[i+1]+px[i+2])/3;
+                        bright += b; opaqueCount++;
+                        if (b > 200) brightPx++;
+                    }
                 }
                 var circle = img.closest('.stamp-circle');
                 if ((opaqueCount / totalPx) >= 0.95) {
@@ -101,8 +105,13 @@
                             }
                         }
                     }
-                } else if (opaqueCount > 0 && (bright/opaqueCount) > 220) {
-                    circle.classList.add('is-light'); tags.push('light');
+                } else if (opaqueCount > 0) {
+                    var opaqueRatio = opaqueCount / totalPx;
+                    var brightFrac  = brightPx / opaqueCount;
+                    var meanBright  = bright / opaqueCount;
+                    if (meanBright > 220 || (opaqueRatio < 0.15 && brightFrac > 0.30)) {
+                        circle.classList.add('is-light'); tags.push('light');
+                    }
                 }
                 tags.forEach(function(t){
                     var el = document.createElement('span');

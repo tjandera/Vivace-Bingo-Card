@@ -27,7 +27,7 @@ npm install
 
 # 3. Create your local .env file with booth codes
 cp .env.example .env
-# Then open .env and fill in real codes for BOOTH_CODE_B0..B11
+# Then open .env and fill in real codes for BOOTH_CODE_B0 and CCA_CODE_1..CCA_CODE_86
 
 # 4. Start the dev server
 npm run dev        # auto-restarts on file changes
@@ -65,13 +65,13 @@ Booth codes are **never** committed to the repo. They live in environment variab
 | Variable | Purpose |
 |---|---|
 | `BOOTH_CODE_B0` | Code for booth `b0` (the mandatory START HERE booth — Vivace's Gamebooth) |
-| `BOOTH_CODE_B1` … `BOOTH_CODE_B11` | Codes for the remaining 11 booths |
+| `CCA_CODE_1` … `CCA_CODE_86` | One code per CCA in the catalog (`models/cca-catalog-data.js`). The client picks 11 at random per user, so **all 86 need to be set** — any of them could be the one a given user has to complete. |
 | `PORT` | (Optional) Override the default port `8000` for local dev |
 
 ### Local dev — `.env` file
 
 1. Copy the template: `cp .env.example .env`
-2. Open `.env` and set a value for every `BOOTH_CODE_B*`
+2. Open `.env` and set a value for `BOOTH_CODE_B0` and every `CCA_CODE_*`
 3. Restart the server — Node auto-loads `.env` on boot via `process.loadEnvFile()`
 
 `.env` is git-ignored (see `.gitignore`) — commits will never include it.
@@ -84,9 +84,9 @@ When you migrate to a **Vercel Pro account**, you'll need to set the same variab
 
 1. Go to https://vercel.com/dashboard
 2. Open the project → **Settings** → **Environment Variables**
-3. For each `BOOTH_CODE_B0` through `BOOTH_CODE_B11`:
-   - **Key:** the variable name (e.g. `BOOTH_CODE_B0`)
-   - **Value:** the booth code you want to use
+3. For `BOOTH_CODE_B0` and each `CCA_CODE_1` through `CCA_CODE_86`:
+   - **Key:** the variable name (e.g. `BOOTH_CODE_B0`, `CCA_CODE_1`)
+   - **Value:** the booth/CCA code you want to use
    - **Environments:** tick **Production**, **Preview**, and **Development**
 4. Click **Save**
 5. Go to **Deployments** → find the most recent → click **⋯** → **Redeploy**
@@ -98,9 +98,12 @@ When you migrate to a **Vercel Pro account**, you'll need to set the same variab
 # One-time link (only needed on a fresh machine)
 vercel link
 
-# Add each variable interactively — you'll be prompted for the value and env
-for i in 0 1 2 3 4 5 6 7 8 9 10 11; do
-  vercel env add BOOTH_CODE_B$i production
+# Add the start-here booth code
+vercel env add BOOTH_CODE_B0 production
+
+# Add each of the 86 CCA codes interactively — you'll be prompted for value + env
+for i in $(seq 1 86); do
+  vercel env add CCA_CODE_$i production
 done
 
 # Pull them down to a local .env.production if you want to inspect them

@@ -6,6 +6,11 @@ const { booths }  = require("../models/booths");
 const { prizes }  = require("../models/prizes");
 const { catalog } = require("../models/cca-catalog");
 
+// One-per-process asset version.  Appended as ?v=… to /js and /css URLs so
+// deploys/restarts invalidate the browser cache instead of serving stale JS
+// for up to 1 h (see server.js maxAge).
+const ASSET_VERSION = Date.now().toString(36);
+
 // GET /api/catalog  →  full CCA catalog as JSON (used by /test-logos.html)
 exports.getCatalog = (_req, res) => {
     res.json(catalog.map(c => ({
@@ -61,5 +66,6 @@ exports.getStampCard = (req, res) => {
         prizeConfig,
         mandatoryBoothId:   mandatoryBooth.id,
         mandatoryBoothName: mandatoryBooth.name,
+        assetVersion:       ASSET_VERSION,
     });
 };

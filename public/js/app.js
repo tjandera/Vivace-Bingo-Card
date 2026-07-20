@@ -26,8 +26,12 @@
 
         if (!raw) { errEl.textContent = 'Please enter your name.'; return; }
 
-        State.load(raw.toLowerCase());
-        State.setActiveUsername(raw.toLowerCase());
+        var name = raw.toLowerCase();
+        State.load(name);
+        State.setActiveUsername(name);
+        // Load (or first-time pick) this user's 11 CCAs and paint the slots.
+        // Done here — not at boot — so each user gets their own randomized set.
+        initCcaSlots(name);
 
         UI.el.nameDisplay.textContent = raw;
         UI.hideLogin();
@@ -204,11 +208,13 @@
                 ctx.drawImage(img, 0, 0, w, h);
                 var px = ctx.getImageData(0, 0, w, h).data;
 
-                var bright = 0, opaqueCount = 0, totalPx = w * h;
+                var bright = 0, opaqueCount = 0, brightPx = 0, totalPx = w * h;
                 for (var i = 0; i < px.length; i += 4) {
                     if (px[i + 3] > 128) {
-                        bright += (px[i] + px[i + 1] + px[i + 2]) / 3;
+                        var b = (px[i] + px[i + 1] + px[i + 2]) / 3;
+                        bright += b;
                         opaqueCount++;
+                        if (b > 200) brightPx++;
                     }
                 }
                 var circle = img.closest && img.closest('.stamp-circle');
@@ -257,7 +263,19 @@
                 }
 
                 // Transparent PNG with mostly-white content → dark backdrop.
-                if (opaqueCount > 0 && (bright / opaqueCount) > 220) {
+                // Two catch cases:
+                //   (a) meanBrightness > 220 — dense near-white logos.
+                //   (b) sparse designs (opaqueRatio < 0.15) where most visible
+                //       pixels are bright (>30%): white-text logos meant for a
+                //       dark bg (e.g. SMU Ardiente, SMUX XSeed) that (a) misses
+                //       because a small colored accent drags the mean down.
+                var opaqueRatio = opaqueCount / totalPx;
+                var brightFrac  = opaqueCount ? brightPx / opaqueCount : 0;
+                var meanBright  = opaqueCount ? bright / opaqueCount   : 0;
+                if (opaqueCount > 0 && (
+                        meanBright > 220 ||
+                        (opaqueRatio < 0.15 && brightFrac > 0.30)
+                    )) {
                     circle.classList.add('is-light');
                 }
             } catch (e) { /* CORS-tainted / other — skip refinement */ }
@@ -268,16 +286,15 @@
     }
 
     // =====================================================================
-    // CCA SELECTION — pick 11 random CCAs on first visit, persist per device.
+    // CCA SELECTION — pick 11 random CCAs per user, persist per user.
     // Populates the empty .checkpoint-slot cards and .roadmap-dot stubs
     // rendered by the EJS template, and adds each CCA's codeHash to
     // BOOTH_CODES so the code-entry modal can verify against them.
     //
-    // Kept per-device (not per-user) so switching users on the same phone
-    // keeps a stable booth set — the user isn't randomly reshuffled.
+    // Keyed by username so each account gets its own random 11: switching
+    // to a fresh name reshuffles; returning to an existing name restores
+    // that name's original picks (matched with their saved stamp progress).
     // =====================================================================
-    var CCA_SELECTION_KEY = 'vivace_cca_selection';
-
     function pickCcaIds() {
         var ids = CCA_CATALOG.map(function (c) { return c.id; });
         // Fisher–Yates
@@ -288,9 +305,8 @@
         return ids.slice(0, CCA_SLOTS);
     }
 
-    function loadOrPickSelection() {
-        var picked = null;
-        try { picked = JSON.parse(localStorage.getItem(CCA_SELECTION_KEY) || 'null'); } catch (e) {}
+    function loadOrPickSelection(username) {
+        var picked = State.getCcaSelection(username);
         // Guard against corrupted storage or a stale selection referencing
         // CCAs that are no longer in the catalog (e.g., after event pruning).
         var byId = {};
@@ -299,13 +315,42 @@
                     picked.every(function (id) { return byId[id]; });
         if (!valid) {
             picked = pickCcaIds();
-            try { localStorage.setItem(CCA_SELECTION_KEY, JSON.stringify(picked)); } catch (e) {}
+            State.setCcaSelection(username, picked);
         }
         return picked;
     }
 
-    function initCcaSlots() {
-        var picked = loadOrPickSelection();
+    // Strip anything the previous user left on the CCA slots — hash entries,
+    // visited/locked classes, logo classes and inline backgrounds set by
+    // refineIcon.  Skips the mandatory b0 card and its roadmap dot.
+    function resetCcaSlots() {
+        Object.keys(BOOTH_CODES).forEach(function (k) {
+            if (k[0] === 'c') delete BOOTH_CODES[k];
+        });
+        document.querySelectorAll('.checkpoint-slot').forEach(function (card) {
+            card.classList.remove('visited', 'locked');
+            card.removeAttribute('data-id');
+            card.removeAttribute('data-name');
+            card.removeAttribute('data-logo');
+            card.style.removeProperty('--accent');
+            var circle = card.querySelector('.stamp-circle');
+            if (circle) {
+                circle.classList.remove('is-light');
+                circle.style.background = '';
+            }
+            var img = card.querySelector('.checkpoint-icon');
+            if (img) img.classList.remove('is-square', 'is-opaque');
+        });
+        document.querySelectorAll('.roadmap-dot[data-slot]').forEach(function (dot) {
+            dot.removeAttribute('data-id');
+            dot.classList.remove('visited');
+        });
+    }
+
+    function initCcaSlots(username) {
+        resetCcaSlots();
+
+        var picked = loadOrPickSelection(username);
         var byId   = {};
         CCA_CATALOG.forEach(function (c) { byId[c.id] = c; });
 
@@ -343,11 +388,12 @@
     // BOOT — either show login or restore the saved user
     // =====================================================================
     (function boot() {
-        initCcaSlots();
         initKeyboard();
 
         var saved = State.readUsername();
         if (!saved) {
+            // No user yet — leave the empty slot stubs alone; initCcaSlots()
+            // runs in handleLogin() once we know whose picks to restore.
             // Overlay is visible by default via CSS — just lock scroll & focus input
             UI.lockScroll();
             setTimeout(function () {
@@ -357,6 +403,7 @@
         }
 
         State.load(saved);
+        initCcaSlots(saved);
         UI.el.nameDisplay.textContent = saved;
         UI.hideLogin();
         UI.render();
