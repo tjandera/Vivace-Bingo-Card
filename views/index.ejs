@@ -14,9 +14,10 @@
     <%- include('partials/card')   %>
     <%- include('partials/modals') %>
 
-    <!-- Server-side data handed off to client-side JS -->
+    <!-- Server-side data handed off to client-side JS.
+         Booth-code hashes are no longer shipped — verification is done
+         server-side via POST /api/verify-code (see routes/index.js). -->
     <script>
-        const BOOTH_CODES          = <%- JSON.stringify(boothCodes)         %>;
         const TOTAL_BOOTHS         = <%=  totalBooths                       %>;
         const CCA_SLOTS            = <%=  ccaSlots                          %>;
         const CCA_CATALOG          = <%- JSON.stringify(ccaCatalog)         %>;

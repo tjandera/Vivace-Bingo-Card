@@ -15,7 +15,13 @@ try { process.loadEnvFile(); } catch (e) { /* no .env file — using shell env *
 const express     = require("express");
 const compression = require("compression");
 const path        = require("path");
+const fs          = require("fs");
 const routes      = require("./routes/index");
+const { requireSecret } = require("./utils/token");
+
+// Fail loudly at boot if the voucher-signing secret is missing.  Better
+// than silently issuing unverifiable vouchers all weekend.
+requireSecret();
 
 const server   = express();
 const hostname = "localhost";
@@ -32,6 +38,49 @@ server.set("view engine", "ejs");
 // assets to ~25 KB, which shows up on phones tethered to conference wifi.
 // Mount BEFORE express.static so static responses go through it too.
 server.use(compression());
+
+// --- JSON body parser -------------------------------------------------
+// Only used by the /api/verify-code and /api/redeem endpoints.  4 KB is
+// plenty for a stamp code or a codes map with 12 entries, and small
+// enough to blunt trivial abuse.
+server.use(express.json({ limit: "4kb" }));
+
+// --- Debug pages (dev only) -------------------------------------------
+// /test-logos.html is a designer tool for auditing CCA logo classification.
+// It's a static file, so this guard has to sit BEFORE express.static.
+if (process.env.NODE_ENV === "production") {
+    server.get("/test-logos.html", (_req, res) => {
+        res.status(404).type("text").send("404 · Not Found");
+    });
+}
+
+// --- Minified-JS rewrite (production only) ----------------------------
+// scripts/build.js emits public/js/<name>.min.js next to each source.
+// In production we serve the minified copy transparently — the template
+// still references /js/state.js etc., no per-file URL changes needed.
+// Dev keeps serving the readable source so debugging isn't painful.
+if (process.env.NODE_ENV === "production") {
+    const jsDir = path.join(__dirname, "public", "js");
+    const minAvailable = new Set();
+    try {
+        for (const f of fs.readdirSync(jsDir)) {
+            if (f.endsWith(".min.js")) minAvailable.add(f.replace(".min.js", ".js"));
+        }
+    } catch (e) { /* no public/js on disk — skip rewrite */ }
+    if (minAvailable.size) {
+        server.use((req, res, next) => {
+            if (req.method === "GET" && req.path.startsWith("/js/") &&
+                req.path.endsWith(".js") && !req.path.endsWith(".min.js")) {
+                const bare = req.path.slice(4);
+                if (minAvailable.has(bare)) {
+                    req.url = "/js/" + bare.replace(/\.js$/, ".min.js") +
+                              (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "");
+                }
+            }
+            next();
+        });
+    }
+}
 
 // --- Static assets ----------------------------------------------------
 // Serves everything in public/ at the URL root, e.g. /css/card.css.

@@ -15,31 +15,24 @@
     var USERNAME_KEY = 'vivace_username';
     function visitedKey(u)      { return 'vivace_' + u + '_visited'; }
     function redeemedKey(u)     { return 'vivace_' + u + '_redeemed'; }
+    function codesKey(u)        { return 'vivace_' + u + '_codes'; }
     function ccaSelectionKey(u) { return 'vivace_' + u + '_cca_selection'; }
 
-    // ---- Client-side hash ----------------------------------------------
-    // Must produce the SAME output as utils/hash.js on the server.
-    // Booth codes are shipped to the browser as hashes so plain codes
-    // are never visible in the page source.
-    function hash(str) {
-        var h = 0;
-        for (var i = 0; i < str.length; i++) {
-            h = ((h << 5) - h) + str.charCodeAt(i);
-            h |= 0;
-        }
-        return h.toString();
-    }
-
     // ---- The public state object --------------------------------------
+    // Note: code verification is server-side now (POST /api/verify-code).
+    // No plaintext-code hashing happens on the client any more.
     var State = {
         USERNAME_KEY:    USERNAME_KEY,
 
         currentUsername: null,
         visitedBooths:   [],   // array of booth IDs like "b0", "b1", …
         redeemedPrizes:  [],   // array of numeric prize IDs
+        enteredCodes:    {},   // { boothId: plaintextCode } — submitted to
+                               //   /api/redeem so the server can re-verify.
+                               //   An attacker who tampers visitedBooths can
+                               //   still display fake stamps but has no codes
+                               //   to submit → redemption fails server-side.
         currentBoothId:  null, // booth currently open in the code-entry modal
-
-        hash: hash,
 
         // Read the saved username without loading it as active
         readUsername: function () {
@@ -51,13 +44,16 @@
             try {
                 var v = JSON.parse(localStorage.getItem(visitedKey(username)))  || [];
                 var r = JSON.parse(localStorage.getItem(redeemedKey(username))) || [];
+                var c = JSON.parse(localStorage.getItem(codesKey(username)))    || {};
                 this.currentUsername = username;
                 this.visitedBooths   = v;
                 this.redeemedPrizes  = r;
+                this.enteredCodes    = (c && typeof c === 'object' && !Array.isArray(c)) ? c : {};
             } catch (e) {
                 this.currentUsername = username;
                 this.visitedBooths   = [];
                 this.redeemedPrizes  = [];
+                this.enteredCodes    = {};
             }
         },
 
@@ -71,6 +67,7 @@
             try {
                 localStorage.setItem(visitedKey(this.currentUsername),  JSON.stringify(this.visitedBooths));
                 localStorage.setItem(redeemedKey(this.currentUsername), JSON.stringify(this.redeemedPrizes));
+                localStorage.setItem(codesKey(this.currentUsername),    JSON.stringify(this.enteredCodes));
                 return true;
             } catch (err) {
                 // Surface the failure so the user knows their progress isn't sticky.
@@ -94,6 +91,13 @@
             this.currentUsername = null;
             this.visitedBooths   = [];
             this.redeemedPrizes  = [];
+            this.enteredCodes    = {};
+        },
+
+        // Remember the plaintext code the user entered for a booth.  Used
+        // by /api/redeem to re-verify server-side at prize-claim time.
+        setCode: function (boothId, code) {
+            this.enteredCodes[boothId] = code;
         },
 
         // ---- CCA selection persistence (per-user) ------------------------

@@ -113,43 +113,122 @@
         if (e.target === $confirm) closeConfirm();
     });
 
+    // ---- AT-BOOTH INSTRUCTION MODAL ------------------------------------
+    // Sits between "confirm redemption" and the actual /api/redeem call so
+    // the user has to press Redeem Now with staff watching, not from home.
+    var $atBooth = document.getElementById('atBoothModal');
+    var _atBoothCallback = null;
+
+    function showAtBooth(onRedeem) {
+        _atBoothCallback = onRedeem;
+        $atBooth.style.display = 'flex';
+        lockScroll();
+        setTimeout(function () { document.getElementById('atBoothConfirmBtn').focus(); }, 60);
+    }
+
+    function closeAtBooth() {
+        $atBooth.style.display = 'none';
+        unlockScroll();
+        _atBoothCallback = null;
+    }
+
+    document.getElementById('atBoothConfirmBtn').addEventListener('click', function () {
+        var cb = _atBoothCallback;
+        closeAtBooth();
+        if (cb) cb();
+    });
+    document.getElementById('atBoothCancelBtn').addEventListener('click', closeAtBooth);
+    $atBooth.addEventListener('click', function (e) {
+        if (e.target === $atBooth) closeAtBooth();
+    });
+
     // ---- REDEMPTION VOUCHER --------------------------------------------
+    // Now takes a server-signed voucher object of shape:
+    //   { prizeId, username, issuedAt, stampCount, sig }
     // Reads prize label + image from the tile's own DOM so no server-side
-    // data has to be duplicated into JS.  Called from handlePrizeClick().
+    // data has to be duplicated into JS.  Called from handlePrizeClick()
+    // in app.js after a successful POST /api/redeem.
     var $redeem       = document.getElementById('redeemModal');
     var $redeemClose  = document.getElementById('redeemCloseBtn');
 
     function pad2(n) { return n < 10 ? '0' + n : String(n); }
 
-    function formatIssued(d) {
-        // e.g. "15 Jul 2026 · 20:14"
+    // Format an ISO timestamp coming from the server → "15 Jul 2026 · 20:14".
+    function formatIssuedISO(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) d = new Date();
         var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         return d.getDate() + ' ' + months[d.getMonth()] + ' ' + d.getFullYear() +
                ' · ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
     }
 
-    function makeVoucherRef(prizeId, name) {
-        // Short deterministic-ish reference so the printed voucher looks official.
-        var base = (name || 'GUEST').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'VVCE';
-        var rand = Math.floor(Math.random() * 9000 + 1000);
-        return 'VVC-P' + prizeId + '-' + base + '-' + rand;
+    // Build a short human-friendly ref from the HMAC signature.  The first
+    // 8 hex chars of the sig are effectively random-per-voucher and let
+    // booth staff distinguish two vouchers at a glance.
+    function makeVoucherRef(voucher) {
+        var name = (voucher.username || 'GUEST').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4) || 'VVCE';
+        var short = (voucher.sig || '').slice(0, 8) || '00000000';
+        return 'VVC-P' + voucher.prizeId + '-' + name + '-' + short;
     }
 
-    function showRedemption(prizeId) {
-        if ($redeem == null) return;
-        var tile = document.querySelector('.prize-tile[data-prize="' + prizeId + '"]');
+    // Live countdown ticker.  Stopped/restarted per voucher render so old
+    // vouchers don't keep firing when the modal is reused for a fresh one.
+    var _countdownTimer = null;
+    function pad2s(n) { return (n < 10 ? '0' : '') + n; }
+
+    function stopCountdown() {
+        if (_countdownTimer) { clearInterval(_countdownTimer); _countdownTimer = null; }
+    }
+
+    function startCountdown(expIso, onExpired) {
+        stopCountdown();
+        var expMs   = Date.parse(expIso);
+        var $count  = document.getElementById('voucherCountdown');
+        var $modal  = document.querySelector('.voucher-content');
+        if (!$count || isNaN(expMs)) return;
+
+        function tick() {
+            var remaining = Math.max(0, expMs - Date.now());
+            if (remaining <= 0) {
+                $count.textContent = '00:00';
+                $count.classList.remove('is-warning', 'is-urgent');
+                $count.classList.add('is-expired');
+                if ($modal) $modal.classList.add('is-expired');
+                var $refresh = document.getElementById('voucherRefreshBtn');
+                if ($refresh) $refresh.style.display = '';
+                stopCountdown();
+                if (typeof onExpired === 'function') onExpired();
+                return;
+            }
+            var sec = Math.floor(remaining / 1000);
+            var m   = Math.floor(sec / 60);
+            var s   = sec % 60;
+            $count.textContent = pad2s(m) + ':' + pad2s(s);
+            $count.classList.remove('is-expired');
+            if ($modal) $modal.classList.remove('is-expired');
+            // colour swap: green > 3 min, amber 1–3 min, red < 1 min
+            $count.classList.toggle('is-warning', remaining <= 3 * 60_000 && remaining > 60_000);
+            $count.classList.toggle('is-urgent',  remaining <= 60_000);
+        }
+        tick();
+        _countdownTimer = setInterval(tick, 1000);
+    }
+
+    function showRedemption(voucher) {
+        if ($redeem == null || !voucher) return;
+        var tile = document.querySelector('.prize-tile[data-prize="' + voucher.prizeId + '"]');
         if (!tile) return;
 
         var img       = tile.querySelector('.prize-image img');
         var labelEl   = tile.querySelector('.prize-label');
-        var prizeLbl  = labelEl ? labelEl.textContent : ('Prize ' + prizeId);
+        var prizeLbl  = labelEl ? labelEl.textContent : ('Prize ' + voucher.prizeId);
         var prizeSrc  = img ? img.getAttribute('src') : '';
 
-        document.getElementById('voucherName').textContent   = State.currentUsername || '—';
-        document.getElementById('voucherStamps').textContent = State.visitedBooths.length + ' / ' + TOTAL_BOOTHS;
-        document.getElementById('voucherIssued').textContent = formatIssued(new Date());
+        document.getElementById('voucherName').textContent   = voucher.username || State.currentUsername || '—';
+        document.getElementById('voucherStamps').textContent = (voucher.stampCount || State.visitedBooths.length) + ' / ' + TOTAL_BOOTHS;
+        document.getElementById('voucherIssued').textContent = formatIssuedISO(voucher.issuedAt);
         document.getElementById('voucherPrizeLabel').textContent = prizeLbl;
-        document.getElementById('voucherRef').textContent    = makeVoucherRef(prizeId, State.currentUsername);
+        document.getElementById('voucherRef').textContent    = makeVoucherRef(voucher);
 
         var $voucherImg = document.getElementById('voucherPrizeImage');
         if (prizeSrc) {
@@ -160,6 +239,22 @@
             $voucherImg.style.display = 'none';
         }
 
+        // Reset expired-state styling — a fresh voucher shouldn't inherit
+        // 'is-expired' if the previous one was already expired when closed.
+        var $modal = document.querySelector('.voucher-content');
+        if ($modal) $modal.classList.remove('is-expired');
+        var $refresh = document.getElementById('voucherRefreshBtn');
+        if ($refresh) $refresh.style.display = 'none';
+
+        // Kick off the countdown (only if the voucher carries an exp field;
+        // gracefully degrades for older payloads without one).
+        if (voucher.exp) startCountdown(voucher.exp);
+        else {
+            document.getElementById('voucherCountdown').textContent = '—';
+            var $row = document.getElementById('voucherValidityRow');
+            if ($row) $row.style.display = 'none';
+        }
+
         $redeem.style.display = 'flex';
         lockScroll();
         setTimeout(function () { $redeemClose.focus(); }, 60);
@@ -168,6 +263,7 @@
     function closeRedemption() {
         $redeem.style.display = 'none';
         unlockScroll();
+        stopCountdown();
     }
 
     if ($redeemClose) $redeemClose.addEventListener('click', closeRedemption);
@@ -375,6 +471,8 @@
         closeConfirm: closeConfirm,
         showLogin:    showLogin,
         hideLogin:    hideLogin,
+        showAtBooth:  showAtBooth,
+        closeAtBooth: closeAtBooth,
         render:       render,
         rebindStamps: rebindStamps,
         showCongrats: showCongrats,

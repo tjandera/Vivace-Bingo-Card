@@ -9,7 +9,22 @@ const bingoController = require("../controllers/bingoController");
 router.get("/", bingoController.getStampCard);
 
 // GET /api/catalog  → JSON of all CCAs (id, name, logo, accent) — used by
-// /test-logos.html for visual inspection.  Codes/hashes are NOT included.
-router.get("/api/catalog", bingoController.getCatalog);
+// /test-logos.html for visual inspection.  Dev-only: block in production
+// so random visitors can't scrape the CCA list.  Codes/hashes are never
+// included even in dev.
+router.get("/api/catalog", (req, res, next) => {
+    if (process.env.NODE_ENV === "production") return res.status(404).type("text").send("404 · Not Found");
+    return bingoController.getCatalog(req, res, next);
+});
+
+// POST /api/verify-code  → single-code check.  Body: { boothId, code }.
+// Rate-limited by IP.  See controllers/bingoController.js for details.
+router.post("/api/verify-code", bingoController.verifyCode);
+
+// POST /api/redeem  → prize redemption.  Body: { prizeId, username, codes }.
+// Server verifies each plaintext code against .env and returns an HMAC-
+// signed voucher.  This is the anti-cheat gate — client-side localStorage
+// tampering can display fake stamps but cannot forge a voucher.
+router.post("/api/redeem", bingoController.redeem);
 
 module.exports = router;

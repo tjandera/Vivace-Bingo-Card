@@ -478,6 +478,65 @@ body.modal-open {
     word-break: break-word;
 }
 
+/* Live countdown — starts green, turns amber under 3 min, red under 1 min.
+   When expired, .is-expired swap gives it a struck-through, urgent look. */
+.voucher-countdown {
+    font-family: 'Space Mono', monospace;
+    font-size: 15px;
+    color: #15803d;
+    letter-spacing: .05em;
+}
+.voucher-countdown.is-warning { color: #b45309; }
+.voucher-countdown.is-urgent  { color: #b91c1c; }
+.voucher-countdown.is-expired {
+    color: #b91c1c;
+    text-decoration: line-through;
+}
+.voucher-expired-banner {
+    display: none;
+    background: #fee2e2;
+    border: 2px solid #b91c1c;
+    color: #7f1d1d;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+    margin: 8px 0;
+}
+.voucher-content.is-expired .voucher-expired-banner { display: block; }
+.voucher-content.is-expired .voucher-stamp {
+    background: #b91c1c;
+    color: #fff;
+}
+
+/* At-booth instruction modal — plain but assertive, so users don't skim past. */
+.at-booth-content { max-width: 380px; text-align: center; }
+.at-booth-title {
+    font-family: 'Bagel Fat One', cursive;
+    font-size: 20px;
+    color: var(--ink);
+    margin: 6px 0 12px;
+}
+.at-booth-body {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+.at-booth-callout {
+    background: #fef3c7;
+    border: 2px solid #92400e;
+    color: #7c2d12;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    text-align: center;
+}
+
 /* Prize block — image + label side-by-side */
 .voucher-prize {
     display: flex;

@@ -81,40 +81,99 @@
         if ($lastFocused) { $lastFocused.focus(); $lastFocused = null; }
     }
 
-    // Check the entered code against the booth's stored hash
+    // Check the entered code by asking the server (POST /api/verify-code).
+    // The plaintext codes never leave .env on the server, so an attacker
+    // with DevTools cannot enumerate them from the client bundle.
+    // On success we cache the plaintext locally — it gets re-submitted
+    // when the user redeems a prize so the server can re-verify.
+    var _verifyInFlight = false;
     function verifyCode() {
+        if (_verifyInFlight) return;
         if (!State.currentBoothId) return;
-        var code = $codeInput.value.trim();
+        var code    = $codeInput.value.trim();
         if (!code) return;
+        var boothId = State.currentBoothId;
 
-        if (State.hash(code) === BOOTH_CODES[State.currentBoothId]) {
-            var boothCard = document.querySelector(
-                '.checkpoint-card[data-id="' + State.currentBoothId + '"]');
-            var boothName = boothCard ? boothCard.dataset.name : '';
-            State.visitedBooths.push(State.currentBoothId);
-            State.save();
-            UI.render();
-            closeCodeModal();
-            UI.announce(boothName + ' stamped! ' + State.visitedBooths.length +
-                ' of ' + TOTAL_BOOTHS + ' booths visited.');
-            if (State.visitedBooths.length === TOTAL_BOOTHS) {
-                setTimeout(UI.showCongrats, 500);
+        _verifyInFlight = true;
+        $codeError.textContent = 'Checking…';
+
+        fetch('/api/verify-code', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ boothId: boothId, code: code }),
+        })
+        .then(function (r) {
+            if (r.status === 429) {
+                return r.json().then(function () {
+                    throw new Error('rate_limit');
+                });
             }
-        } else {
-            $codeError.textContent = 'Incorrect code — try again!';
-            $codeInput.value       = '';
+            return r.json();
+        })
+        .then(function (data) {
+            _verifyInFlight = false;
+            if (data && data.ok) {
+                // Guard against double-stamps if the modal is spammed
+                if (State.visitedBooths.indexOf(boothId) === -1) {
+                    State.visitedBooths.push(boothId);
+                }
+                State.setCode(boothId, code);
+                State.save();
+
+                var boothCard = document.querySelector(
+                    '.checkpoint-card[data-id="' + boothId + '"]');
+                var boothName = boothCard ? boothCard.dataset.name : '';
+
+                UI.render();
+                closeCodeModal();
+                UI.announce(boothName + ' stamped! ' + State.visitedBooths.length +
+                    ' of ' + TOTAL_BOOTHS + ' booths visited.');
+                if (State.visitedBooths.length === TOTAL_BOOTHS) {
+                    setTimeout(UI.showCongrats, 500);
+                }
+            } else {
+                $codeError.textContent = 'Incorrect code — try again!';
+                $codeInput.value       = '';
+                $codeInput.focus();
+                UI.announce('Incorrect code. Please try again.');
+            }
+        })
+        .catch(function (err) {
+            _verifyInFlight = false;
+            if (err && err.message === 'rate_limit') {
+                $codeError.textContent = 'Too many attempts — slow down and try again in a minute.';
+            } else {
+                $codeError.textContent = 'No connection — check your signal and try again.';
+            }
             $codeInput.focus();
-            UI.announce('Incorrect code. Please try again.');
-        }
+        });
     }
 
     // =====================================================================
     // PRIZE CLICK — called from onclick="handlePrizeClick(1)" etc.
     // =====================================================================
+    // Cache the server-signed voucher for each redeemed prize so the user
+    // can re-open it without hitting the server again.  Keyed by prizeId.
+    var _voucherCache = {};
+
+    function voucherIsFresh(v) {
+        if (!v || !v.exp) return true;   // no exp field → treat as fresh (legacy)
+        return Date.parse(v.exp) > Date.now();
+    }
+
     window.handlePrizeClick = function (prizeId) {
-        // Already redeemed → re-open the voucher so the user can re-screenshot.
+        // Already redeemed → re-open the cached voucher, or re-issue a
+        // fresh one if the cached voucher has expired.
         if (State.redeemedPrizes.indexOf(prizeId) !== -1) {
-            UI.showRedemption(prizeId);
+            var cached = _voucherCache[prizeId];
+            if (cached && voucherIsFresh(cached)) {
+                UI.showRedemption(cached);
+            } else {
+                // Expired or missing → re-POST /api/redeem to mint a new
+                // short-lived voucher.  Uses the same stored codes; server
+                // re-verifies them, so this is safe.
+                redeemOnServer(prizeId);
+            }
             return;
         }
         var needed = PRIZE_CONFIG[prizeId];
@@ -127,13 +186,84 @@
             '.prize-tile[data-prize="' + prizeId + '"]');
         UI.confirm('Redeem Prize ' + prizeId + '? (' + needed + ' stamps required)',
             function () {
-                State.redeemedPrizes.push(prizeId);
-                State.save();
-                UI.render();
-                UI.showRedemption(prizeId);
-                UI.announce('Prize ' + prizeId + ' successfully redeemed. Please present this voucher at the VIVACE prize counter.');
+                // Two-step: acknowledge intent (confirm), then require the
+                // user to press Redeem Now in front of staff at the counter.
+                // This is what prevents screenshot-based sharing beyond the
+                // 15-min TTL — the button press is witnessed live.
+                UI.showAtBooth(function () { redeemOnServer(prizeId); });
             });
     };
+
+    // Wire up the "Refresh voucher" button inside the redemption modal.
+    // It re-uses handlePrizeClick, which sees the prize is redeemed but
+    // notices the cached voucher is stale → re-POSTs and shows the new one.
+    document.addEventListener('DOMContentLoaded', function () {
+        var $refresh = document.getElementById('voucherRefreshBtn');
+        if (!$refresh) return;
+        $refresh.addEventListener('click', function () {
+            // Find whichever prize's voucher is currently on screen
+            var refText = document.getElementById('voucherRef').textContent || '';
+            var m = refText.match(/VVC-P(\d+)-/);
+            if (m) window.handlePrizeClick(Number(m[1]));
+        });
+    });
+
+    // POST every stored plaintext code to /api/redeem.  Server re-verifies
+    // against .env and only signs a voucher if every code matches.  This is
+    // the anti-cheat gate — an attacker who tampered visitedBooths in
+    // DevTools has no valid codes to submit, so redemption fails.
+    var _redeemInFlight = false;
+    function redeemOnServer(prizeId) {
+        if (_redeemInFlight) return;
+        _redeemInFlight = true;
+
+        fetch('/api/redeem', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                prizeId:  prizeId,
+                username: State.currentUsername || '',
+                codes:    State.enteredCodes || {},
+            }),
+        })
+        .then(function (r) { return r.json().then(function (d) { d._status = r.status; return d; }); })
+        .then(function (data) {
+            _redeemInFlight = false;
+            if (data._status === 200 && data.ok && data.voucher) {
+                if (State.redeemedPrizes.indexOf(prizeId) === -1) {
+                    State.redeemedPrizes.push(prizeId);
+                }
+                State.save();
+                _voucherCache[prizeId] = data.voucher;
+                UI.render();
+                UI.showRedemption(data.voucher);
+                UI.announce('Prize ' + prizeId + ' successfully redeemed. ' +
+                    'Please present this voucher at the VIVACE prize counter.');
+                return;
+            }
+            if (data._status === 403 && data.error === 'bad_code') {
+                UI.toast("Some stamps couldn't be verified — please re-collect the codes from those booths.", 5000);
+                return;
+            }
+            if (data._status === 403 && data.error === 'not_enough_stamps') {
+                UI.toast('You do not have enough stamps for this prize.');
+                return;
+            }
+            if (data._status === 403 && data.error === 'missing_start_here') {
+                UI.toast('Visit "' + MANDATORY_BOOTH_NAME + '" first — its code must be part of every redemption.', 5000);
+                return;
+            }
+            if (data._status === 429) {
+                UI.toast('Too many redemption attempts — try again in a minute.');
+                return;
+            }
+            UI.toast('Could not redeem — please try again.');
+        })
+        .catch(function () {
+            _redeemInFlight = false;
+            UI.toast('Offline — reconnect and try again.', 5000);
+        });
+    }
 
     // =====================================================================
     // KEYBOARD SUPPORT — booth cards + modal Escape/Tab handling
@@ -154,7 +284,9 @@
         // Global Escape — closes whichever modal is currently open
         document.addEventListener('keydown', function (e) {
             if (e.key !== 'Escape') return;
+            var atBooth = document.getElementById('atBoothModal');
             if ($codeModal.style.display === 'flex')             { closeCodeModal();   return; }
+            if (atBooth && atBooth.style.display === 'flex')     { UI.closeAtBooth();  return; }
             if (UI.el.confirmModal.style.display  === 'flex')    { UI.closeConfirm();  return; }
             if (UI.el.congratsModal.style.display === 'flex')    { UI.closeCongrats();          }
         });
@@ -341,8 +473,8 @@
     // =====================================================================
     // CCA SELECTION — pick 11 random CCAs per user, persist per user.
     // Populates the empty .checkpoint-slot cards and .roadmap-dot stubs
-    // rendered by the EJS template, and adds each CCA's codeHash to
-    // BOOTH_CODES so the code-entry modal can verify against them.
+    // rendered by the EJS template.  Code verification is server-side now,
+    // so we no longer need to seed BOOTH_CODES with per-CCA hashes.
     //
     // Keyed by username so each account gets its own random 11: switching
     // to a fresh name reshuffles; returning to an existing name restores
@@ -373,13 +505,10 @@
         return picked;
     }
 
-    // Strip anything the previous user left on the CCA slots — hash entries,
-    // visited/locked classes, logo classes and inline backgrounds set by
-    // refineIcon.  Skips the mandatory b0 card and its roadmap dot.
+    // Strip anything the previous user left on the CCA slots — visited/locked
+    // classes, logo classes and inline backgrounds set by refineIcon.  Skips
+    // the mandatory b0 card and its roadmap dot.
     function resetCcaSlots() {
-        Object.keys(BOOTH_CODES).forEach(function (k) {
-            if (k[0] === 'c') delete BOOTH_CODES[k];
-        });
         document.querySelectorAll('.checkpoint-slot').forEach(function (card) {
             card.classList.remove('visited', 'locked');
             card.removeAttribute('data-id');
@@ -410,9 +539,6 @@
         picked.forEach(function (ccaId, slotIdx) {
             var cca = byId[ccaId];
             if (!cca) return;
-
-            // Extend BOOTH_CODES so verifyCode() can look this hash up.
-            BOOTH_CODES[cca.id] = cca.codeHash;
 
             // Fill the grid stamp card
             var card = document.querySelector('.checkpoint-slot[data-slot="' + slotIdx + '"]');

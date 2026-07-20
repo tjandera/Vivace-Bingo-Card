@@ -56,6 +56,10 @@
             <span class="voucher-row-label">Issued</span>
             <span class="voucher-row-value" id="voucherIssued">—</span>
         </div>
+        <div class="voucher-row voucher-row-validity" id="voucherValidityRow">
+            <span class="voucher-row-label">Expires in</span>
+            <span class="voucher-row-value voucher-countdown" id="voucherCountdown">—</span>
+        </div>
 
         <div class="voucher-divider" aria-hidden="true"></div>
 
@@ -67,14 +71,19 @@
             </div>
         </div>
 
+        <div class="voucher-expired-banner" id="voucherExpiredBanner">
+            This voucher has expired.  Tap <em>Refresh</em> to get a new one.
+        </div>
+
         <div class="voucher-notice">
             <strong>Please present this voucher at the VIVACE prize counter to claim your reward.</strong>
-            We kindly recommend taking a screenshot of this page. Your progress is saved on this device, but a screenshot ensures a smooth handover should any connectivity issues arise.
+            Your voucher is valid for a short window — head over promptly. If it expires while you're queueing, just tap Refresh for a new one.
         </div>
 
         <div class="voucher-ref">Ref: <span id="voucherRef">—</span></div>
 
         <div class="modal-buttons">
+            <button class="btn-verify" id="voucherRefreshBtn" style="display:none">Refresh voucher</button>
             <button class="btn-verify" id="redeemCloseBtn">Close</button>
         </div>
     </div>
@@ -87,6 +96,30 @@
         <div class="modal-buttons">
             <button class="btn-verify" id="confirmOkBtn">Confirm</button>
             <button class="btn-cancel"  id="confirmCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- AT-BOOTH INSTRUCTION MODAL — shown after the user confirms redemption
+     but before the voucher is minted.  Forces the user to walk to the
+     Vivace prize counter and tap "Redeem Now" while a staff member is
+     watching, so a fresh voucher is visibly minted in front of them
+     (rather than screenshot-shared with a friend). -->
+<div id="atBoothModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="atBoothTitle">
+    <div class="modal-content at-booth-content">
+        <h3 id="atBoothTitle" class="at-booth-title">Redeem at the Vivace booth</h3>
+        <p class="at-booth-body">
+            Please walk over to the <strong>Vivace prize counter</strong> first.
+            Show this screen to a staff member, then tap
+            <strong>Redeem Now</strong> below <em>in front of them</em> so they
+            can see your voucher being issued live.
+        </p>
+        <div class="at-booth-callout">
+            Screenshots aren't accepted &mdash; the button must be pressed at the counter.
+        </div>
+        <div class="modal-buttons">
+            <button class="btn-verify" id="atBoothConfirmBtn">Redeem Now</button>
+            <button class="btn-cancel"  id="atBoothCancelBtn">Not yet</button>
         </div>
     </div>
 </div>
