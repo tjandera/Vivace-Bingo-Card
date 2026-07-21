@@ -176,22 +176,21 @@
             }
             return;
         }
+        // Not enough stamps → quiet toast only, no modal.  The at-booth
+        // pop-up should never appear until the user is actually eligible.
         var needed = PRIZE_CONFIG[prizeId];
         if (State.visitedBooths.length < needed) {
             UI.toast('You need ' + needed + ' stamps (you have ' +
                 State.visitedBooths.length + ').');
             return;
         }
+        // Eligible → go straight to the at-booth pop-up.  Its own
+        // "Redeem Now" / "Not yet" buttons act as the confirmation, so we
+        // skip the previous redundant confirm dialog.  The button press
+        // must be witnessed by staff at the counter.
         $lastFocused = document.querySelector(
             '.prize-tile[data-prize="' + prizeId + '"]');
-        UI.confirm('Redeem Prize ' + prizeId + '? (' + needed + ' stamps required)',
-            function () {
-                // Two-step: acknowledge intent (confirm), then require the
-                // user to press Redeem Now in front of staff at the counter.
-                // This is what prevents screenshot-based sharing beyond the
-                // 15-min TTL — the button press is witnessed live.
-                UI.showAtBooth(function () { redeemOnServer(prizeId); });
-            });
+        UI.showAtBooth(function () { redeemOnServer(prizeId); });
     };
 
     // Wire up the "Refresh voucher" button inside the redemption modal.
