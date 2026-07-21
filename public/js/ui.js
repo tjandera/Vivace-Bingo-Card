@@ -214,6 +214,13 @@
         _countdownTimer = setInterval(tick, 1000);
     }
 
+    // base64url-encode any string (no padding, url-safe alphabet).
+    // Used to pack the whole voucher into the /v?t=… URL for staff verification.
+    function b64url(str) {
+        var b = btoa(unescape(encodeURIComponent(str)));
+        return b.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
     function showRedemption(voucher) {
         if ($redeem == null || !voucher) return;
         var tile = document.querySelector('.prize-tile[data-prize="' + voucher.prizeId + '"]');
@@ -229,6 +236,23 @@
         document.getElementById('voucherIssued').textContent = formatIssuedISO(voucher.issuedAt);
         document.getElementById('voucherPrizeLabel').textContent = prizeLbl;
         document.getElementById('voucherRef').textContent    = makeVoucherRef(voucher);
+
+        // Populate the staff-verification link.  Server round-trip on /v
+        // will HMAC-verify the token — a forged voucher (Attack 1 or 4)
+        // won't have a matching sig and the page will show INVALID.
+        try {
+            var token = b64url(JSON.stringify(voucher));
+            var vUrl  = location.origin + '/v?t=' + token;
+            var $link = document.getElementById('voucherVerifyLink');
+            var $url  = document.getElementById('voucherVerifyUrl');
+            var $box  = document.getElementById('voucherVerify');
+            if ($link) $link.href = vUrl;
+            if ($url)  $url.textContent = vUrl;
+            if ($box)  $box.style.display = '';
+        } catch (e) {
+            var $box2 = document.getElementById('voucherVerify');
+            if ($box2) $box2.style.display = 'none';
+        }
 
         var $voucherImg = document.getElementById('voucherPrizeImage');
         if (prizeSrc) {

@@ -45,4 +45,16 @@ function verify(payload, sig) {
     return crypto.timingSafeEqual(a, b);
 }
 
-module.exports = { sign, verify, requireSecret };
+// Base64url encode/decode a voucher object (payload + sig) for use as a
+// URL query param — safe for staff to open in their phone browser.
+function encodeVoucher(voucher) {
+    return Buffer.from(JSON.stringify(voucher)).toString("base64url");
+}
+function decodeVoucher(token) {
+    if (typeof token !== "string" || token.length === 0 || token.length > 2048) return null;
+    try {
+        return JSON.parse(Buffer.from(token, "base64url").toString("utf8"));
+    } catch (e) { return null; }
+}
+
+module.exports = { sign, verify, requireSecret, encodeVoucher, decodeVoucher };

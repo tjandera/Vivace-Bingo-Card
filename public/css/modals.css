@@ -510,6 +510,61 @@ body.modal-open {
     color: #fff;
 }
 
+/* Staff verify block inside the voucher — makes the /v verification
+   flow discoverable without needing to brief the user's phone screen. */
+.voucher-verify {
+    margin: 14px 0 8px;
+    padding: 14px 16px;
+    background: #f0f9ff;
+    border: 2px solid #0369a1;
+    border-radius: 12px;
+    text-align: center;
+}
+.voucher-verify-label {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11px;
+    color: #075985;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+.voucher-verify-btn {
+    display: inline-block;
+    background: #0369a1;
+    color: #fff;
+    text-decoration: none;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 700;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    border: 2px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+}
+.voucher-verify-btn:active {
+    transform: translate(1px,1px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+.voucher-verify-url {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #0c4a6e;
+    word-break: break-all;
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: #e0f2fe;
+    border-radius: 6px;
+}
+.voucher-verify-hint {
+    font-family: 'Fredoka', sans-serif;
+    font-size: 11px;
+    color: #075985;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+.voucher-verify-hint b { color: #0c4a6e; }
+
 /* At-booth instruction modal — plain but assertive, so users don't skim past. */
 .at-booth-content { max-width: 380px; text-align: center; }
 .at-booth-title {

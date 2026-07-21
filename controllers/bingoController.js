@@ -6,7 +6,7 @@
 const { booths }  = require("../models/booths");
 const { prizes }  = require("../models/prizes");
 const { catalog } = require("../models/cca-catalog");
-const { sign }    = require("../utils/token");
+const { sign, verify, decodeVoucher } = require("../utils/token");
 
 // One-per-process asset version.  Appended as ?v=… to /js and /css URLs so
 // deploys/restarts invalidate the browser cache instead of serving stale JS
@@ -213,4 +213,124 @@ exports.redeem = (req, res) => {
     };
     const sig = sign(payload);
     return res.json({ ok: true, voucher: { ...payload, sig } });
+};
+
+// -----------------------------------------------------------------------
+// GET /v?t=<base64url voucher>  →  staff-facing verification page.
+// Closes the two DevTools bypasses (fake voucher via UI.showRedemption,
+// intercepted /api/redeem response).  An attacker can display anything
+// on the user's phone, but the /v page only shows GREEN VALID when the
+// HMAC signature checks out against VIVACE_VOUCHER_SECRET.
+//
+// Staff briefing: "Only accept prizes when this page shows a GREEN
+// VALID banner AND the browser address bar reads vivace-bingo-card.
+// vercel.app.  Anything else — refuse."
+// -----------------------------------------------------------------------
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;",
+    }[ch]));
+}
+
+function relativeAge(iso) {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const abs = Math.abs(diffMs);
+    const mins = Math.round(abs / 60_000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + " min " + (diffMs < 0 ? "from now" : "ago");
+    const hrs = Math.round(mins / 60);
+    return hrs + " h " + (diffMs < 0 ? "from now" : "ago");
+}
+
+function renderVerifyPage(state, voucher, message) {
+    // state: 'valid' | 'expired' | 'invalid' | 'malformed'
+    const palette = {
+        valid:     { bg: "#15803d", accent: "#bbf7d0", tag: "VALID",     icon: "&check;" },
+        expired:   { bg: "#b45309", accent: "#fed7aa", tag: "EXPIRED",   icon: "!" },
+        invalid:   { bg: "#b91c1c", accent: "#fecaca", tag: "INVALID",   tagPrefix: "&times; ", icon: "&times;" },
+        malformed: { bg: "#b91c1c", accent: "#fecaca", tag: "MALFORMED", icon: "&times;" },
+    }[state] || { bg: "#404040", accent: "#e5e5e5", tag: "UNKNOWN", icon: "?" };
+
+    const noStore = "public, max-age=0, must-revalidate";
+    const prize   = voucher && prizes.find(p => p.id === voucher.prizeId);
+    const details = voucher ? `
+        <div class="row"><span>Prize</span><b>${escapeHtml(prize ? prize.label : "Prize " + voucher.prizeId)}</b></div>
+        <div class="row"><span>User</span><b>${escapeHtml(voucher.username || "—")}</b></div>
+        <div class="row"><span>Issued</span><b>${escapeHtml(relativeAge(voucher.issuedAt))}</b></div>
+        <div class="row"><span>Stamps</span><b>${escapeHtml(String(voucher.stampCount || "—"))}</b></div>
+        <div class="row"><span>Sig</span><b class="mono">${escapeHtml(String(voucher.sig || "").slice(0,16))}…</b></div>
+    ` : "";
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voucher verification — VIVACE 2026</title>
+<style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html,body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: ${palette.bg}; color: #fff; display: flex; flex-direction: column; }
+    .banner { flex: 0 0 auto; padding: 40px 24px 32px; text-align: center; }
+    .icon   { font-size: 96px; line-height: 1; margin-bottom: 8px; }
+    .tag    { font-size: 44px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+    .msg    { margin-top: 12px; font-size: 16px; opacity: .95; }
+    .card   { flex: 1 1 auto; background: #fff; color: #111; padding: 24px 20px; border-radius: 24px 24px 0 0; margin-top: 8px; }
+    .card h2 { font-size: 14px; color: #555; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 12px; }
+    .row    { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 15px; }
+    .row:last-child { border-bottom: none; }
+    .row span { color: #666; }
+    .row b { color: #111; text-align: right; }
+    .mono   { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 12px; }
+    .brief  { margin-top: 20px; padding: 14px 16px; background: ${palette.accent}; color: #111; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+    .brief b { color: ${palette.bg}; }
+    .footer { text-align: center; font-size: 11px; color: #999; margin-top: 24px; padding-bottom: 20px; }
+</style>
+</head>
+<body>
+    <div class="banner">
+        <div class="icon">${palette.icon}</div>
+        <div class="tag">${palette.tag}</div>
+        <div class="msg">${escapeHtml(message || "")}</div>
+    </div>
+    <div class="card">
+        ${voucher ? `<h2>Voucher details</h2>${details}` : ""}
+        <div class="brief">
+            ${state === "valid"
+                ? `<b>Hand over the prize.</b> Cross the user's name off the paper list for this prize so it can't be redeemed twice.`
+                : `<b>Do not hand over the prize.</b> Ask the user to tap Prize again in the app to retry.`}
+        </div>
+        <div class="footer">VIVACE 2026 · vivace-bingo-card.vercel.app/v · staff-only</div>
+    </div>
+</body>
+</html>`;
+}
+
+exports.verifyVoucher = (req, res) => {
+    res.set("Cache-Control", "public, max-age=0, must-revalidate");
+    res.set("X-Robots-Tag", "noindex");
+    const token = req.query.t;
+    if (!token || typeof token !== "string") {
+        return res.status(400).send(renderVerifyPage("malformed", null,
+            "No token supplied.  Ask the user to reopen the voucher and try again."));
+    }
+    const voucher = decodeVoucher(token);
+    if (!voucher || typeof voucher !== "object" || !voucher.sig) {
+        return res.status(400).send(renderVerifyPage("malformed", null,
+            "Token could not be read.  This is not a valid voucher."));
+    }
+    const { sig, ...payload } = voucher;
+    if (!verify(payload, sig)) {
+        // Log so we can spot forgery attempts in Vercel logs.
+        console.warn("[verify] forged voucher: username=" + JSON.stringify(payload.username) +
+                     " prizeId=" + payload.prizeId + " ip=" + clientIp(req));
+        return res.status(200).send(renderVerifyPage("invalid", null,
+            "This voucher's signature does not match.  It may have been forged or tampered with in the browser.  Refuse the prize."));
+    }
+    if (voucher.exp && new Date(voucher.exp).getTime() < Date.now()) {
+        return res.status(200).send(renderVerifyPage("expired", voucher,
+            "This voucher has expired.  Ask the user to tap the Refresh button in their app."));
+    }
+    return res.status(200).send(renderVerifyPage("valid", voucher,
+        "Signature checks out.  Voucher was issued by the server."));
 };

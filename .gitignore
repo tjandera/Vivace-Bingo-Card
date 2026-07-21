@@ -40,3 +40,4 @@ tests/mobile-qa-*.json
 # 86 logos live under public/images/ccas/ and ARE committed; this folder
 # stays local for reference only.
 public/data/
+.vercel

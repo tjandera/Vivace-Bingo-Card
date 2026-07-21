@@ -27,4 +27,9 @@ router.post("/api/verify-code", bingoController.verifyCode);
 // tampering can display fake stamps but cannot forge a voucher.
 router.post("/api/redeem", bingoController.redeem);
 
+// GET /v?t=<base64url voucher>  → staff-facing verification page.
+// Renders green/red HTML confirming the voucher's HMAC signature is
+// genuine, so fake vouchers produced via DevTools console fail the check.
+router.get("/v", bingoController.verifyVoucher);
+
 module.exports = router;

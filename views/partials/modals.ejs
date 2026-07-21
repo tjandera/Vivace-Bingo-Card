@@ -82,6 +82,20 @@
 
         <div class="voucher-ref">Ref: <span id="voucherRef">—</span></div>
 
+        <!-- Staff verification: opens /v on the server so staff can see a
+             cryptographic green/red result.  The URL is shown as plain
+             text so staff can also cross-check the address bar after
+             tapping.  Only pages on vivace-bingo-card.vercel.app/v
+             should be trusted. -->
+        <div class="voucher-verify" id="voucherVerify" style="display:none">
+            <div class="voucher-verify-label">Show to staff for verification</div>
+            <a class="voucher-verify-btn" id="voucherVerifyLink" href="#" target="_blank" rel="noopener">Tap to verify voucher</a>
+            <div class="voucher-verify-url" id="voucherVerifyUrl"></div>
+            <div class="voucher-verify-hint">
+                Staff: check the address bar reads <b>vivace-bingo-card.vercel.app</b> and the page shows a green <b>VALID</b> banner.
+            </div>
+        </div>
+
         <div class="modal-buttons">
             <button class="btn-verify" id="voucherRefreshBtn" style="display:none">Refresh voucher</button>
             <button class="btn-verify" id="redeemCloseBtn">Close</button>
